@@ -1,0 +1,5 @@
+{
+  "name": "FleetTrack Driver",
+  "description": "A professional driver tracking application with offline GPS logging, shift management, and mileage reporting.",
+  "requestFramePermissions": ["geolocation"]
+}
