@@ -1,31 +1,4 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  query, 
-  where, 
-  onSnapshot, 
-  serverTimestamp,
-  orderBy,
-  limit,
-  getDocs,
-  setDoc,
-  getDoc
-} from 'firebase/firestore';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   LogOut, 
   Play, 
@@ -39,49 +12,88 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Gauge
+  Gauge,
+  UserPlus,
+  Settings,
+  Globe,
+  Languages
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, db } from './firebase';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import AdminPanel from './components/AdminPanel';
 
 // --- Types ---
 
+interface User {
+  id: number;
+  username: string;
+  displayName: string;
+  role: string;
+}
+
 interface Shift {
-  id: string;
-  driverId: string;
-  startTime: any;
-  endTime?: any;
+  id: number;
+  driverId: number;
+  startTime: string;
+  endTime?: string;
   startKm: number;
   endKm?: number;
   status: 'active' | 'completed';
 }
 
 interface Telemetry {
-  id?: string;
-  shiftId: string;
-  driverId: string;
-  timestamp: any;
+  id?: number;
+  shiftId: number;
+  driverId: number;
+  timestamp: string;
   latitude: number;
   longitude: number;
   speed: number;
   heading: number;
 }
 
-interface UserProfile {
-  uid: string;
-  email: string;
-  displayName: string;
-  role: 'driver' | 'admin';
-  pin?: string;
-}
+type View = 'driving' | 'history' | 'profile' | 'admin';
 
-type View = 'driving' | 'history' | 'profile';
+// --- API Helpers ---
+
+const API_BASE = '/api';
+
+async function apiFetch(path: string, options: any = {}) {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
+  console.log(`Fetching ${API_BASE}${path}`, options);
+  const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  console.log(`Response from ${path}:`, response.status, response.ok);
+  
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`Error response body:`, text);
+    let error;
+    try {
+      error = text ? JSON.parse(text) : { message: `API Error: ${response.status}` };
+    } catch (e) {
+      error = { message: `API Error: ${response.status} ${response.statusText}` };
+    }
+    throw new Error(error.message || 'API Error');
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
 
 // --- Components ---
 
 export default function App() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t, i18n } = useTranslation();
+  const [user, setUser] = useState<User | null>(null);
   const [activeShift, setActiveShift] = useState<Shift | null>(null);
   const [history, setHistory] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +107,11 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [currentView, setCurrentView] = useState<View>('driving');
+  const [adminData, setAdminData] = useState<{ active: any[], history: any[] }>({ active: [], history: [] });
+  const [selectedShiftTelemetry, setSelectedShiftTelemetry] = useState<Telemetry[] | null>(null);
   const [showSummary, setShowSummary] = useState<Shift | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [authData, setAuthData] = useState({ username: '', password: '', displayName: '', email: '' });
 
   const watchId = useRef<number | null>(null);
   const telemetryInterval = useRef<NodeJS.Timeout | null>(null);
@@ -106,154 +122,159 @@ export default function App() {
     localStorage.setItem('pending_telemetry', JSON.stringify(pendingTelemetry));
   }, [pendingTelemetry]);
 
-  // --- Auth & Profile ---
+  // --- Auth ---
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        // Fetch or create profile
-        const profileRef = doc(db, 'users', firebaseUser.uid);
-        const profileSnap = await getDoc(profileRef);
-        
-        if (profileSnap.exists()) {
-          setProfile(profileSnap.data() as UserProfile);
-        } else {
-          const newProfile: UserProfile = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || '',
-            displayName: firebaseUser.displayName || 'Driver',
-            role: 'driver'
-          };
-          await setDoc(profileRef, newProfile);
-          setProfile(newProfile);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const userData = await apiFetch('/auth/profile');
+          setUser({ id: userData.userId, username: userData.username, role: userData.role, displayName: userData.displayName || 'Driver' });
+        } catch (err) {
+          localStorage.removeItem('token');
         }
-      } else {
-        setProfile(null);
       }
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    };
+    checkAuth();
   }, []);
 
-  const handleLogin = async () => {
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      if (isRegistering) {
+        await apiFetch('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify(authData),
+        });
+        setIsRegistering(false);
+        setError(t('registration_success'));
+      } else {
+        const data = await apiFetch('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username: authData.username, password: authData.password }),
+        });
+        localStorage.setItem('token', data.access_token);
+        setUser(data.user);
+      }
     } catch (err: any) {
-      setError('Giriş başarısız: ' + err.message);
+      setError(err.message);
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      if (activeShift) {
-        setError('Lütfen önce vardiyanızı sonlandırın.');
-        return;
-      }
-      await signOut(auth);
-    } catch (err: any) {
-      setError('Çıkış başarısız: ' + err.message);
+  const handleLogout = () => {
+    if (activeShift) {
+      setError(t('logout_error_shift_active') || 'Please end your shift first.');
+      return;
     }
+    localStorage.removeItem('token');
+    setUser(null);
   };
 
   // --- Shift Management ---
 
-  useEffect(() => {
+  const fetchActiveShift = useCallback(async () => {
     if (!user) return;
-
-    // Active Shift Listener
-    const qActive = query(
-      collection(db, 'shifts'),
-      where('driverId', '==', user.uid),
-      where('status', '==', 'active'),
-      limit(1)
-    );
-
-    const unsubActive = onSnapshot(qActive, (snapshot) => {
-      if (!snapshot.empty) {
-        const shiftDoc = snapshot.docs[0];
-        setActiveShift({ id: shiftDoc.id, ...shiftDoc.data() } as Shift);
-        setIsTracking(true);
-      } else {
-        setActiveShift(null);
-        setIsTracking(false);
-      }
-    });
-
-    // History Listener
-    const qHistory = query(
-      collection(db, 'shifts'),
-      where('driverId', '==', user.uid),
-      where('status', '==', 'completed'),
-      orderBy('startTime', 'desc'),
-      limit(20)
-    );
-
-    const unsubHistory = onSnapshot(qHistory, (snapshot) => {
-      const shifts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Shift));
-      setHistory(shifts);
-    });
-
-    return () => {
-      unsubActive();
-      unsubHistory();
-    };
+    try {
+      const shift = await apiFetch('/shifts/active');
+      setActiveShift(shift);
+      setIsTracking(!!shift);
+    } catch (err) {
+      console.error('Fetch active shift failed', err);
+    }
   }, [user]);
+
+  const fetchHistory = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await apiFetch('/shifts/history');
+      setHistory(data);
+    } catch (err) {
+      console.error('Fetch history failed', err);
+    }
+  }, [user]);
+
+  const fetchAdminData = useCallback(async () => {
+    if (!user || user.role !== 'admin') return;
+    try {
+      const [active, history] = await Promise.all([
+        apiFetch('/shifts/admin/active'),
+        apiFetch('/shifts/admin/history')
+      ]);
+      setAdminData({ active, history });
+    } catch (err) {
+      console.error('Fetch admin data failed', err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchActiveShift();
+      fetchHistory();
+      if (user.role === 'admin') fetchAdminData();
+    }
+  }, [user, fetchActiveShift, fetchHistory, fetchAdminData]);
 
   const startShift = async () => {
     if (!user || !startKm) return;
     try {
-      const shiftData = {
-        driverId: user.uid,
-        startTime: serverTimestamp(),
-        startKm: parseFloat(startKm),
-        status: 'active'
-      };
-      await addDoc(collection(db, 'shifts'), shiftData);
+      const shift = await apiFetch('/shifts/start', {
+        method: 'POST',
+        body: JSON.stringify({ startKm: parseFloat(startKm) }),
+      });
+      setActiveShift(shift);
+      setIsTracking(true);
       setStartKm('');
     } catch (err: any) {
       setError('Vardiya başlatılamadı: ' + err.message);
     }
   };
 
+
   const endShift = async () => {
-    if (!activeShift || !endKm) return;
+    console.log('endShift attempt:', { activeShift, endKm });
+    if (!activeShift) {
+      setError('Aktif vardiya bulunamadı.');
+      return;
+    }
+    if (!endKm) {
+      setError('Lütfen bitiş kilometresini girin.');
+      return;
+    }
+
     try {
       const endKmNum = parseFloat(endKm);
       if (endKmNum < activeShift.startKm) {
-        setError('Bitiş kilometresi başlangıçtan küçük olamaz.');
+        setError(`Bitiş kilometresi (${endKmNum}), başlangıç kilometresinden (${activeShift.startKm}) küçük olamaz.`);
         return;
       }
 
-      const shiftRef = doc(db, 'shifts', activeShift.id);
-      const updatedData = {
-        endTime: serverTimestamp(),
-        endKm: endKmNum,
-        status: 'completed'
-      };
-      await updateDoc(shiftRef, updatedData);
+      console.log(`Sending end shift request for ID: ${activeShift.id}`);
+      const updatedShift = await apiFetch(`/shifts/${activeShift.id}/end`, {
+        method: 'POST',
+        body: JSON.stringify({ endKm: endKmNum }),
+      });
       
-      // Show summary
-      setShowSummary({ ...activeShift, ...updatedData });
-      
+      console.log('Shift ended successfully:', updatedShift);
+      setShowSummary(updatedShift);
       setEndKm('');
       setActiveShift(null);
+      setIsTracking(false);
+      fetchHistory();
     } catch (err: any) {
+      console.error('End shift error:', err);
       setError('Vardiya sonlandırılamadı: ' + err.message);
     }
   };
-
-  // --- GPS Tracking ---
 
   const recordTelemetry = useCallback(async (position: GeolocationPosition) => {
     if (!activeShift || !user) return;
 
     const data = {
       shiftId: activeShift.id,
-      driverId: user.uid,
-      timestamp: serverTimestamp(),
+      timestamp: new Date().toISOString(),
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
       speed: position.coords.speed || 0,
@@ -261,11 +282,12 @@ export default function App() {
     };
 
     try {
-      // Try to upload immediately
       if (navigator.onLine) {
-        await addDoc(collection(db, 'telemetry'), data);
+        await apiFetch('/shifts/telemetry', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
       } else {
-        // Save to local state if offline (in a real app, use IndexedDB)
         setPendingTelemetry(prev => [...prev, data as any]);
       }
     } catch (err) {
@@ -275,36 +297,69 @@ export default function App() {
   }, [activeShift, user]);
 
   useEffect(() => {
-    if (isTracking && activeShift) {
-      // Start watching position
+    if (user) {
+      // Start watching position immediately when logged in
       watchId.current = navigator.geolocation.watchPosition(
-        (pos) => setCurrentLocation(pos.coords),
-        (err) => setError('GPS Hatası: ' + err.message),
-        { enableHighAccuracy: true }
+        (pos) => {
+          setCurrentLocation(pos.coords);
+          setError(null); // Clear any previous GPS errors
+        },
+        (err) => {
+          console.error('GPS Error:', err);
+          if (err.code === 1) {
+            setError('Konum izni reddedildi. Lütfen tarayıcı ayarlarından konum izni verin.');
+          } else if (err.code === 2) {
+            setError('Konum bilgisi alınamadı. Lütfen GPS sinyalini kontrol edin.');
+          } else if (err.code === 3) {
+            setError('Konum isteği zaman aşımına uğradı.');
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
-
-      // Periodic recording (every 30 seconds)
-      telemetryInterval.current = setInterval(() => {
-        navigator.geolocation.getCurrentPosition(recordTelemetry);
-      }, 30000);
-    } else {
-      if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
-      if (telemetryInterval.current) clearInterval(telemetryInterval.current);
     }
 
     return () => {
-      if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
-      if (telemetryInterval.current) clearInterval(telemetryInterval.current);
+      if (watchId.current !== null) {
+        navigator.geolocation.clearWatch(watchId.current);
+        watchId.current = null;
+      }
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (isTracking && activeShift) {
+      telemetryInterval.current = setInterval(() => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => recordTelemetry(pos),
+          (err) => console.error('Telemetry GPS Error:', err),
+          { enableHighAccuracy: true }
+        );
+      }, 15000);
+    } else {
+      if (telemetryInterval.current) {
+        clearInterval(telemetryInterval.current);
+        telemetryInterval.current = null;
+      }
+    }
+
+    return () => {
+      if (telemetryInterval.current) {
+        clearInterval(telemetryInterval.current);
+        telemetryInterval.current = null;
+      }
     };
   }, [isTracking, activeShift, recordTelemetry]);
 
-  // Sync pending telemetry when online
+  // Sync pending telemetry
   useEffect(() => {
     const handleOnline = async () => {
       if (pendingTelemetry.length > 0) {
         try {
           for (const item of pendingTelemetry) {
-            await addDoc(collection(db, 'telemetry'), item);
+            await apiFetch('/shifts/telemetry', {
+              method: 'POST',
+              body: JSON.stringify(item),
+            });
           }
           setPendingTelemetry([]);
         } catch (err) {
@@ -317,7 +372,7 @@ export default function App() {
     return () => window.removeEventListener('online', handleOnline);
   }, [pendingTelemetry]);
 
-  // --- UI Helpers ---
+  // --- UI ---
 
   if (loading) {
     return (
@@ -333,34 +388,109 @@ export default function App() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md text-center space-y-8"
+          className="w-full max-w-md space-y-8"
         >
-          <div className="flex justify-center">
-            <div className="w-20 h-20 bg-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-500/20">
-              <Navigation className="w-10 h-10 text-white" />
+          <div className="text-center space-y-4">
+            <div className="flex justify-center gap-4">
+              <div className="w-20 h-20 bg-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-500/20">
+                <Navigation className="w-10 h-10 text-white" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight">{t('app_name')}</h1>
+              <p className="text-neutral-400">{t('auth_subtitle')}</p>
+            </div>
+            
+            {/* Language Switcher */}
+            <div className="flex justify-center gap-2 pt-2">
+              {['tr', 'en', 'de'].map((lang) => (
+                <button
+                  key={lang}
+                  onClick={() => i18n.changeLanguage(lang)}
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all ${
+                    i18n.language.startsWith(lang) ? 'bg-orange-500 text-white' : 'bg-neutral-900 text-neutral-500 hover:text-white'
+                  }`}
+                >
+                  {lang}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">FleetTrack</h1>
-            <p className="text-neutral-400">Sürücü Takip Sistemi</p>
+
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isRegistering && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('display_name')}</label>
+                  <input 
+                    type="text"
+                    required
+                    value={authData.displayName}
+                    onChange={(e) => setAuthData({ ...authData, displayName: e.target.value })}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl py-4 px-4 focus:outline-none focus:border-orange-500 transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('email')}</label>
+                  <input 
+                    type="email"
+                    required
+                    value={authData.email}
+                    onChange={(e) => setAuthData({ ...authData, email: e.target.value })}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl py-4 px-4 focus:outline-none focus:border-orange-500 transition-colors"
+                  />
+                </div>
+              </>
+            )}
+            <div className="space-y-2">
+              <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('username')}</label>
+              <input 
+                type="text"
+                required
+                value={authData.username}
+                onChange={(e) => setAuthData({ ...authData, username: e.target.value })}
+                className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl py-4 px-4 focus:outline-none focus:border-orange-500 transition-colors"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('password')}</label>
+              <input 
+                type="password"
+                required
+                value={authData.password}
+                onChange={(e) => setAuthData({ ...authData, password: e.target.value })}
+                className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl py-4 px-4 focus:outline-none focus:border-orange-500 transition-colors"
+              />
+            </div>
+
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            <button 
+              type="submit"
+              className="w-full bg-white text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-neutral-200 transition-colors"
+            >
+              {isRegistering ? <UserPlus className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+              {isRegistering ? t('register') : t('login')}
+            </button>
+          </form>
+
+          <div className="text-center">
+            <button 
+              onClick={() => setIsRegistering(!isRegistering)}
+              className="text-orange-500 text-sm font-bold"
+            >
+              {isRegistering ? t('already_have_account') : t('no_account')}
+            </button>
           </div>
-          <button 
-            onClick={handleLogin}
-            className="w-full bg-white text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-neutral-200 transition-colors"
-          >
-            <Shield className="w-5 h-5" />
-            Google ile Giriş Yap
-          </button>
-          <p className="text-xs text-neutral-500">
-            Şirket telefonu ile güvenli giriş yapın.
-          </p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-orange-500/30">
+    <Routes>
+      <Route path="*" element={
+        <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-orange-500/30">
       {/* Header */}
       <header className="p-6 flex justify-between items-center border-b border-neutral-900 sticky top-0 bg-neutral-950/80 backdrop-blur-md z-50">
         <div className="flex items-center gap-3">
@@ -368,18 +498,20 @@ export default function App() {
             <Navigation className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="font-bold text-sm leading-tight">{profile?.displayName}</h2>
+            <h2 className="font-bold text-sm leading-tight">{user.displayName}</h2>
             <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">
-              {activeShift ? 'Vardiya Aktif' : 'Vardiya Kapalı'}
+              {activeShift ? t('shift_active') : t('shift_inactive')}
             </p>
           </div>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="p-2 text-neutral-500 hover:text-white transition-colors"
-        >
-          <LogOut className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleLogout}
+            className="p-2 text-neutral-500 hover:text-white transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       <main className="p-6 max-w-lg mx-auto space-y-8 pb-32">
@@ -403,38 +535,38 @@ export default function App() {
             <section className="bg-neutral-900 rounded-3xl p-6 border border-neutral-800 shadow-xl">
               <div className="flex justify-between items-start mb-6">
                 <div className="space-y-1">
-                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-bold">Anlık Durum</p>
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider font-bold">{t('status')}</p>
                   <h3 className="text-2xl font-bold flex items-center gap-2">
                     {activeShift ? (
                       <>
                         <Zap className="w-6 h-6 text-orange-500 fill-orange-500" />
-                        Sürüşte
+                        {t('driving')}
                       </>
                     ) : (
                       <>
                         <History className="w-6 h-6 text-neutral-500" />
-                        Beklemede
+                        {t('standby')}
                       </>
                     )}
                   </h3>
                 </div>
                 {activeShift && (
                   <div className="bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter border border-orange-500/20">
-                    GPS Aktif
+                    GPS {t('online')}
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-black/40 p-4 rounded-2xl border border-neutral-800/50">
-                  <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">Hız</p>
+                  <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">{t('speed')}</p>
                   <p className="text-2xl font-mono font-bold">
                     {currentLocation?.speed ? Math.round(currentLocation.speed * 3.6) : 0}
                     <span className="text-xs text-neutral-600 ml-1">km/h</span>
                   </p>
                 </div>
                 <div className="bg-black/40 p-4 rounded-2xl border border-neutral-800/50">
-                  <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">Yön</p>
+                  <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">{t('heading')}</p>
                   <p className="text-2xl font-mono font-bold">
                     {currentLocation?.heading ? Math.round(currentLocation.heading) : 0}
                     <span className="text-xs text-neutral-600 ml-1">°</span>
@@ -448,7 +580,7 @@ export default function App() {
               {!activeShift ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-xs text-neutral-500 uppercase font-bold ml-2">Başlangıç Kilometresi</label>
+                    <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('start_km')}</label>
                     <div className="relative">
                       <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                       <input 
@@ -462,27 +594,31 @@ export default function App() {
                   </div>
                   <button 
                     onClick={startShift}
-                    disabled={!startKm}
-                    className="w-full bg-orange-500 disabled:opacity-50 text-white font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95"
+                    disabled={!startKm || !currentLocation}
+                    className="w-full bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95"
                   >
-                    <Play className="w-6 h-6 fill-white" />
-                    İşe Başla
+                    {!currentLocation ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <Play className="w-6 h-6 fill-white" />
+                    )}
+                    {!currentLocation ? t('waiting_location') : t('start_shift')}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-neutral-900/50 p-4 rounded-2xl border border-neutral-800/50">
-                      <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">Başlangıç KM</p>
+                      <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">{t('start_km')}</p>
                       <p className="text-xl font-mono font-bold text-neutral-300">{activeShift.startKm}</p>
                     </div>
                     <div className="bg-neutral-900/50 p-4 rounded-2xl border border-neutral-800/50">
-                      <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">Durum</p>
-                      <p className="text-xl font-mono font-bold text-orange-500">Takipte</p>
+                      <p className="text-[10px] text-neutral-500 uppercase font-bold mb-1">{t('status')}</p>
+                      <p className="text-xl font-mono font-bold text-orange-500">{t('driving')}</p>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs text-neutral-500 uppercase font-bold ml-2">Bitiş Kilometresi</label>
+                    <label className="text-xs text-neutral-500 uppercase font-bold ml-2">{t('end_km')}</label>
                     <div className="relative">
                       <Gauge className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                       <input 
@@ -496,11 +632,10 @@ export default function App() {
                   </div>
                   <button 
                     onClick={endShift}
-                    disabled={!endKm}
-                    className="w-full bg-white disabled:opacity-50 text-black font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:bg-neutral-200 transition-all active:scale-95"
+                    className="w-full bg-white text-black font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:bg-neutral-200 transition-all active:scale-95"
                   >
                     <Square className="w-6 h-6 fill-black" />
-                    Vardiyayı Bitir
+                    {!endKm ? t('enter_end_km') : t('end_shift')}
                   </button>
                 </div>
               )}
@@ -513,9 +648,9 @@ export default function App() {
                   <MapPin className="w-6 h-6 text-neutral-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Mevcut Konum</p>
+                  <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">{t('current_location')}</p>
                   <p className="text-sm text-neutral-300 truncate font-mono">
-                    {currentLocation ? `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}` : 'Konum aranıyor...'}
+                    {currentLocation ? `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}` : t('waiting_location')}
                   </p>
                 </div>
               </div>
@@ -525,11 +660,11 @@ export default function App() {
 
         {currentView === 'history' && (
           <div className="space-y-6">
-            <h3 className="text-xl font-bold">Vardiya Geçmişi</h3>
+            <h3 className="text-xl font-bold">{t('history')}</h3>
             {history.length === 0 ? (
               <div className="text-center py-12 text-neutral-500">
                 <History className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                <p>Henüz tamamlanmış vardiya yok.</p>
+                <p>{t('no_history')}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -537,14 +672,14 @@ export default function App() {
                   <div key={shift.id} className="bg-neutral-900 p-5 rounded-2xl border border-neutral-800 flex justify-between items-center">
                     <div className="space-y-1">
                       <p className="text-xs text-neutral-500 font-bold">
-                        {new Date(shift.startTime?.toDate?.() || shift.startTime).toLocaleDateString('tr-TR')}
+                        {new Date(shift.startTime).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}
                       </p>
                       <p className="font-bold text-lg">
-                        {(shift.endKm || 0) - shift.startKm} <span className="text-xs text-neutral-500">km</span>
+                        {(shift.endKm || 0) - shift.startKm} <span className="text-xs text-neutral-500">{t('km')}</span>
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-neutral-500 uppercase font-bold">Kilometre</p>
+                      <p className="text-[10px] text-neutral-500 uppercase font-bold">{t('km')}</p>
                       <p className="text-xs text-neutral-400 font-mono">{shift.startKm} → {shift.endKm}</p>
                     </div>
                   </div>
@@ -561,23 +696,50 @@ export default function App() {
                 <UserIcon className="w-12 h-12 text-neutral-500" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold">{profile?.displayName}</h3>
-                <p className="text-neutral-500">{profile?.email}</p>
+                <h3 className="text-2xl font-bold">{user.displayName}</h3>
+                <p className="text-neutral-500">{user.username}</p>
               </div>
             </div>
             
             <div className="bg-neutral-900 rounded-3xl p-6 border border-neutral-800 space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-neutral-800">
-                <span className="text-neutral-400">Rol</span>
-                <span className="font-bold uppercase text-xs bg-orange-500/10 text-orange-500 px-2 py-1 rounded-md">{profile?.role}</span>
+                <span className="text-neutral-400">{t('role')}</span>
+                <span className="font-bold uppercase text-xs bg-orange-500/10 text-orange-500 px-2 py-1 rounded-md">{user.role}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-neutral-800">
-                <span className="text-neutral-400">Cihaz Durumu</span>
-                <span className="text-green-500 text-xs font-bold">ÇEVRİMİÇİ</span>
+                <span className="text-neutral-400">{t('device_status')}</span>
+                <span className="text-green-500 text-xs font-bold">{t('online')}</span>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-neutral-400">Uygulama Versiyonu</span>
-                <span className="text-neutral-500 text-xs">v1.0.0</span>
+              <div className="flex justify-between items-center py-2 border-b border-neutral-800">
+                <span className="text-neutral-400">{t('version')}</span>
+                <span className="text-neutral-500 text-xs">v2.1.0 (i18n)</span>
+              </div>
+              
+              {/* Language Switcher in Profile */}
+              <div className="space-y-3 pt-2">
+                <p className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest flex items-center gap-2">
+                  <Globe className="w-3 h-3" />
+                  Dil Seçimi / Language / Sprache
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'tr', label: 'Türkçe' },
+                    { id: 'en', label: 'English' },
+                    { id: 'de', label: 'Deutsch' }
+                  ].map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => i18n.changeLanguage(lang.id)}
+                      className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                        i18n.language.startsWith(lang.id) 
+                          ? 'bg-orange-500 border-orange-500 text-white' 
+                          : 'bg-neutral-950 border-neutral-800 text-neutral-500 hover:text-white'
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -589,9 +751,9 @@ export default function App() {
             <div className="bg-orange-500 text-white px-4 py-3 rounded-2xl flex items-center justify-between shadow-2xl animate-pulse">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-xs font-bold">Senkronizasyon Bekliyor ({pendingTelemetry.length})</span>
+                <span className="text-xs font-bold">{t('syncing')} ({pendingTelemetry.length})</span>
               </div>
-              <span className="text-[10px] uppercase font-bold opacity-80">Offline Mod</span>
+              <span className="text-[10px] uppercase font-bold opacity-80">{t('offline_mode')}</span>
             </div>
           </div>
         )}
@@ -615,26 +777,23 @@ export default function App() {
                 <CheckCircle2 className="w-10 h-10 text-green-500" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold">Vardiya Tamamlandı</h3>
-                <p className="text-neutral-400 text-sm">Harika iş çıkardınız!</p>
+                <h3 className="text-2xl font-bold">{t('shift_summary')}</h3>
+                <p className="text-neutral-500 text-sm">{new Date(showSummary.startTime).toLocaleString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}</p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <div className="space-y-1">
-                  <p className="text-[10px] text-neutral-500 uppercase font-bold">Toplam Yol</p>
-                  <p className="text-2xl font-bold">{(showSummary.endKm || 0) - showSummary.startKm} <span className="text-xs">km</span></p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] text-neutral-500 uppercase font-bold">Süre</p>
-                  <p className="text-2xl font-bold">Tamam</p>
-                </div>
+              <div className="bg-black/40 rounded-2xl p-6 border border-neutral-800/50">
+                <p className="text-xs text-neutral-500 uppercase font-bold mb-2">{t('total_distance')}</p>
+                <p className="text-4xl font-mono font-bold text-orange-500">
+                  {(showSummary.endKm || 0) - showSummary.startKm}
+                  <span className="text-sm text-neutral-600 ml-2">{t('km')}</span>
+                </p>
               </div>
 
               <button 
                 onClick={() => setShowSummary(null)}
                 className="w-full bg-white text-black font-bold py-4 rounded-2xl hover:bg-neutral-200 transition-colors"
               >
-                Kapat
+                {t('close')}
               </button>
             </motion.div>
           </motion.div>
@@ -665,6 +824,8 @@ export default function App() {
           <span className="text-[10px] font-bold uppercase">Profil</span>
         </button>
       </nav>
-    </div>
+        </div>
+      } />
+    </Routes>
   );
 }

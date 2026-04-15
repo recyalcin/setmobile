@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// --- Core Entities ---
+
+model Person {
+  id           Int       @id @default(autoincrement())
+  persontypeid Int?      @default(0)
+  firstname    String?
+  middlename   String?
+  lastname     String?
+  email        String?
+  phone        String?
+  street       String?
+  housenr      String?
+  pobox        String?
+  city         String?
+  country      String?
+  taxid        String?
+  bankname     String?
+  iban         String?
+  bic          String?
+  dateofbirth  DateTime?
+  birthcity    String?
+  birthcountry String?
+  nationality  String?
+  gender       String?
+  note         String?
+  createdat    DateTime  @default(now())
+  updatedat    DateTime  @updatedAt
+
+  users     User[]
+  drivers   Driver[]
+  employees Employee[]
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  personid      Int?
+  person        Person?  @relation(fields: [personid], references: [id])
+  username      String   @unique
+  password      String
+  active        Boolean  @default(true)
+  remembertoken String?
+  note          String?
+  createdat     DateTime @default(now())
+  updatedat     DateTime @updatedAt
+}
+
+model Driver {
+  id                     Int       @id @default(autoincrement())
+  drivertypeid           Int?
+  personid               Int?
+  person                 Person?   @relation(fields: [personid], references: [id])
+  licensecategoryid      Int?
+  licenseissuedate       DateTime?
+  licenseexpirydate      DateTime?
+  pendorsementissuedate  DateTime?
+  pendorsementexpirydate DateTime?
+  note                   String?
+  createdat              DateTime  @default(now())
+  updatedat              DateTime  @updatedAt
+
+  activities       DriverActivity[]
+  vehiclelocations VehicleLocation[]
+  trips            Trip[]
+  assignments      VehicleAssignment[]
+}
+
+model Employee {
+  id                    Int       @id @default(autoincrement())
+  personid              Int
+  person                Person    @relation(fields: [personid], references: [id])
+  employeetypeid        Int?      @default(0)
+  employeenumber        String?
+  jobtitleid            Int?      @default(0)
+  departmentid          Int?      @default(0)
+  businessemail         String?
+  businessphone         String?
+  hiredate              DateTime?
+  terminationdate       DateTime?
+  note                  String?
+  createdat             DateTime  @default(now())
+  updatedat             DateTime  @updatedAt
+  maxmonthlyhours       Decimal?
+  maxweeklyhours        Decimal?
+  workinghoursschichtid Int?
+
+  workinghours WorkingHours[]
+}
+
+// --- Fleet & Tracking ---
+
+model Vehicle {
+  id            Int      @id @default(autoincrement())
+  vehicletypeid Int?
+  makeid        Int?
+  modelid       Int?
+  colorid       Int?
+  licenseplate  String?
+  note          String?
+  createdat     DateTime @default(now())
+  updatedat     DateTime @updatedAt
+
+  activities       DriverActivity[]
+  vehiclelocations VehicleLocation[]
+  trips            Trip[]
+  services         VehicleService[]
+  assignments      VehicleAssignment[]
+  WorkingHours     WorkingHours[]
+}
+
+model VehicleAssignment {
+  id           Int       @id @default(autoincrement())
+  vehicleid    Int
+  vehicle      Vehicle   @relation(fields: [vehicleid], references: [id])
+  driverid     Int
+  driver       Driver    @relation(fields: [driverid], references: [id])
+  assignedat   DateTime  @default(now())
+  unassignedat DateTime?
+  note         String?
+  createdat    DateTime  @default(now())
+  updatedat    DateTime  @updatedAt
+}
+
+model VehicleLocation {
+  id          Int       @id @default(autoincrement())
+  vehicleid   Int?
+  vehicle     Vehicle?  @relation(fields: [vehicleid], references: [id])
+  driverid    Int?
+  driver      Driver?   @relation(fields: [driverid], references: [id])
+  tripid      Int?
+  datetime    DateTime?
+  lat         Decimal?
+  lng         Decimal?
+  speed       Decimal?
+  heading     Int?
+  accuracy    Decimal?
+  note        String?
+  createddate DateTime  @default(now())
+  updateddate DateTime  @updatedAt
+}
+
+model WorkingHours {
+  id            Int       @id @default(autoincrement())
+  employeeid    Int?
+  employee      Employee? @relation(fields: [employeeid], references: [id])
+  vehicleid     Int?
+  vehicle       Vehicle?  @relation(fields: [vehicleid], references: [id])
+  date          DateTime?
+  firsttripat   DateTime?
+  lasttripat    DateTime?
+  workstartat   DateTime?
+  workendat     DateTime?
+  breakduration String?
+  hours0004     Decimal?
+  hours2006     Decimal?
+  hourstotal    Decimal?
+  recordedat    DateTime?
+  note          String?
+  createdat     DateTime  @default(now())
+  updatedat     DateTime  @updatedAt
+}
+
+model DriverActivity {
+  id                   Int       @id @default(autoincrement())
+  driveractivitytypeid Int?
+  driverid             Int?
+  driver               Driver?   @relation(fields: [driverid], references: [id])
+  vehicleid            Int?
+  vehicle              Vehicle?  @relation(fields: [vehicleid], references: [id])
+  tripid               Int?
+  datetime             DateTime?
+  lat                  Decimal?
+  lng                  Decimal?
+  odometer             Int?
+  note                 String?
+  createddate          DateTime  @default(now())
+  updateddate          DateTime  @updatedAt
+}
+
+model Trip {
+  id                        Int       @id @default(autoincrement())
+  triptypeid                Int?
+  tripstatusid              Int?
+  tripsourceid              Int?
+  vehicleid                 Int?
+  vehicle                   Vehicle?  @relation(fields: [vehicleid], references: [id])
+  driverid                  Int?
+  driver                    Driver?   @relation(fields: [driverid], references: [id])
+  submittedat               DateTime?
+  transmittedat             DateTime?
+  respondedat               DateTime?
+  pickedupat                DateTime?
+  arrivedat                 DateTime?
+  latvehiclelocationatorder Decimal?
+  lngvehiclelocationatorder Decimal?
+  latpickuplocation         Decimal?
+  lngpickuplocation         Decimal?
+  latdropofflocation        Decimal?
+  lngdropofflocation        Decimal?
+  pickupdistance            Decimal?
+  tripdistance              Decimal?
+  fare                      Decimal?
+  paymenttypeid             Int?
+  note                      String?
+  createdat                 DateTime  @default(now())
+  updatedat                 DateTime  @updatedAt
+}
+
+// --- Maintenance & Finance ---
+
+model VehicleService {
+  id                   Int       @id @default(autoincrement())
+  vehicleservicetypeid Int?
+  vehicleid            Int?
+  vehicle              Vehicle?  @relation(fields: [vehicleid], references: [id])
+  companyid            Int?
+  vehicleservicetaskid Int?
+  datetime             DateTime?
+  description          String?
+  odometer             Int?
+  totalamount          Decimal?
+  invoicenumber        String?
+  nextserviceat        DateTime?
+  nextserviceodometer  Int?
+  note                 String?
+  createdat            DateTime  @default(now())
+  updatedat            DateTime  @updatedAt
+}
+
+model Transaction {
+  id                Int       @id @default(autoincrement())
+  transactiontypeid Int?
+  date              DateTime?
+  fromtypeid        Int?
+  fromid            Int?
+  totypeid          Int?
+  toid              Int?
+  amount            Decimal?  @default(0)
+  description       String?
+  vehicleid         Int?
+  personid          Int?
+  note              String?
+  createddate       DateTime  @default(now())
+  updateddate       DateTime  @updatedAt
+  officialtypeid    Int?
+}
+
+// --- Metadata & Lookups ---
+
+model Company {
+  id                 Int      @id @default(autoincrement())
+  companytypeid      Int?
+  companylegalformid Int?
+  name               String?
+  street             String?
+  housenr            String?
+  pobox              String?
+  city               String?
+  countryid          Int?
+  phone              String?
+  email              String?
+  website            String?
+  vatid              String?
+  taxid              String?
+  bankname           String?
+  iban               String?
+  bic                String?
+  note               String?
+  createdat          DateTime @default(now())
+  updatedat          DateTime @updatedAt
+}
+
+model Bank {
+  id          Int      @id @default(autoincrement())
+  banktypeid  Int?
+  name        String
+  note        String?
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+}
+
+model BankAccount {
+  id                Int      @id @default(autoincrement())
+  bankaccounttypeid Int?
+  name              String?
+  bankname          String?
+  iban              String?
+  bic               String?
+  personid          Int?
+  currencyid        Int?
+  isactive          Boolean? @default(true)
+  note              String?
+  createdat         DateTime @default(now())
+  updatedat         DateTime @updatedAt
+}
+
+model Ticket {
+  id               Int       @id @default(autoincrement())
+  tickettypeid     Int?
+  ticketcategoryid Int?
+  createdbyid      Int?
+  requesterid      Int?
+  assignedtoid     Int?
+  priorityid       Int?
+  ticketstatusid   Int?
+  sortorder        Int?
+  subject          String?
+  description      String?
+  dueat            DateTime?
+  scheduledat      DateTime?
+  resolvedat       DateTime?
+  closedat         DateTime?
+  note             String?
+  createdat        DateTime  @default(now())
+  updatedat        DateTime  @updatedAt
+}
+
+model Performance {
+  id                      Int      @id @default(autoincrement())
+  driverid                Int?     @default(0)
+  week                    String?
+  netearningsbolt         Decimal? @default(0)
+  tollfeesbolt            Decimal? @default(0)
+  ridertipsbolt           Decimal? @default(0)
+  collectedcashbolt       Decimal? @default(0)
+  earningsperformancebolt Decimal? @default(0)
+  finishedridesbolt       Int?     @default(0)
+  onlinetimebolt          Decimal? @default(0)
+  totalridedistancebolt   Decimal? @default(0)
+  totalacceptanceratebolt Decimal? @default(0)
+  netearningsuber         Decimal? @default(0)
+  tollfeesuber            Decimal? @default(0)
+  ridertipsuber           Decimal? @default(0)
+  collectedcashuber       Decimal? @default(0)
+  earningsperformanceuber Decimal? @default(0)
+  finishedridesuber       Int?     @default(0)
+  onlinetimeuber          Decimal? @default(0)
+  totalridedistanceuber   Decimal? @default(0)
+  totalacceptancerateuber Decimal? @default(0)
+  note                    String?
+  createdat               DateTime @default(now())
+  updatedat               DateTime @updatedAt
+}
+
+// --- Simple Lookups ---
+
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+}
+
+model JobTitle {
+  id          Int      @id @default(autoincrement())
+  name        String
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+  note        String?
+}
+
+model Make {
+  id          Int      @id @default(autoincrement())
+  name        String
+  note        String?
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+}
+
+model Model {
+  id          Int      @id @default(autoincrement())
+  makeid      Int?
+  name        String
+  note        String?
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+}
+
+model Color {
+  id          Int      @id @default(autoincrement())
+  name        String
+  note        String?
+  createddate DateTime @default(now())
+  updateddate DateTime @updatedAt
+}

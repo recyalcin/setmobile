@@ -1,5 +1,5 @@
 {
   "name": "FleetTrack Driver",
-  "description": "A professional driver tracking application with offline GPS logging, shift management, and mileage reporting.",
+  "description": "Enterprise Fleet Tracking System with NestJS, PostgreSQL (via Prisma), and JWT Auth. Supports offline GPS tracking and shift management.",
   "requestFramePermissions": ["geolocation"]
 }
