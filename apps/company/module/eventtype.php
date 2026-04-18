@@ -14,7 +14,7 @@ if (isset($_GET['delete'])) {
     // Optional: Hier könnte man prüfen, ob noch Events diesen Typ nutzen
     $stmt = $pdo->prepare("DELETE FROM eventtype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/eventtype&msg=deleted";
+    $redirect = "/eventtype&msg=deleted";
 }
 
 if (isset($_POST['save_eventtype'])) {
@@ -25,11 +25,11 @@ if (isset($_POST['save_eventtype'])) {
     if (!empty($id)) {
         $sql = "UPDATE eventtype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/?route=module/eventtype&msg=updated";
+        $redirect = "/eventtype&msg=updated";
     } else {
         $sql = "INSERT INTO eventtype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/?route=module/eventtype&msg=created";
+        $redirect = "/eventtype&msg=created";
     }
 }
 
@@ -59,7 +59,7 @@ if (isset($_GET['edit'])) {
 
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #a855f7;">
     <h3 style="margin-top:0;">🏷️ <?= $edit ? 'Kategorie bearbeiten' : 'Neue Event-Kategorie' ?></h3>
-    <form method="post" action="/?route=module/eventtype" class="form-container">
+    <form method="post" action="/eventtype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
             <div class="form-row">
@@ -73,7 +73,7 @@ if (isset($_GET['edit'])) {
         </div>
         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
             <?php if($edit): ?>
-                <a href="/?route=module/eventtype" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/eventtype" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_eventtype" class="btn save" style="background: #a855f7; padding: 8px 25px;">
                 <?= $edit ? 'Aktualisieren' : 'Hinzufügen' ?>
@@ -105,8 +105,8 @@ if (isset($_GET['edit'])) {
                 <td><strong><?= htmlspecialchars($r['name']) ?></strong></td>
                 <td style="color: #64748b; font-size: 13px;"><?= htmlspecialchars($r['note'] ?? '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/eventtype&edit=<?= $r['id'] ?>" class="action-link" style="text-decoration:none; margin-right:10px;">✎</a>
-                    <a href="/?route=module/eventtype&delete=<?= $r['id'] ?>" 
+                    <a href="/eventtype&edit=<?= $r['id'] ?>" class="action-link" style="text-decoration:none; margin-right:10px;">✎</a>
+                    <a href="/eventtype&delete=<?= $r['id'] ?>" 
                        onclick="return confirm('Diese Kategorie wirklich löschen?')" 
                        style="text-decoration:none; color: #dc2626;">🗑</a>
                 </td>

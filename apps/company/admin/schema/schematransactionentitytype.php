@@ -31,7 +31,7 @@ try {
     }
 
     echo "<p>Struktur ist bereit. Du kannst jetzt Entitäten definieren.</p>";
-    echo "<br><a href='/module/transactionentitytype' class='btn save'>Zum Modul</a>";
+    echo "<br><a href='/transactionentitytype' class='btn save'>Zum Modul</a>";
 
 } catch (PDOException $e) {
     echo "<p style='color:red;'>Fehler: " . htmlspecialchars($e->getMessage()) . "</p>";

@@ -31,7 +31,7 @@ try {
     }
 
     echo "<p>Check abgeschlossen. Die Kassen-Tabelle ist auf dem neuesten Stand.</p>";
-    echo "<br><a href='/module/cashbox' class='btn save'>Zum Modul</a>";
+    echo "<br><a href='/cashbox' class='btn save'>Zum Modul</a>";
 
 } catch (PDOException $e) {
     echo "<p style='color:red;'>Fehler: " . htmlspecialchars($e->getMessage()) . "</p>";

@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM cashboxtype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/cashboxtype?msg=deleted";
+    $redirect = "/cashboxtype?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -26,12 +26,12 @@ if (isset($_POST['save_type'])) {
         // UPDATE
         $sql = "UPDATE cashboxtype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/module/cashboxtype?msg=updated";
+        $redirect = "/cashboxtype?msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO cashboxtype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/module/cashboxtype?msg=created";
+        $redirect = "/cashboxtype?msg=created";
     }
 }
 
@@ -64,7 +64,7 @@ $list = $pdo->query("SELECT * FROM cashboxtype ORDER BY name ASC")->fetchAll();
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? '⚙️ Kassentyp bearbeiten' : '⚙️ Neuen Kassentyp definieren' ?></h3>
     
-    <form method="post" action="/module/cashboxtype" class="form-container">
+    <form method="post" action="/cashboxtype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -80,7 +80,7 @@ $list = $pdo->query("SELECT * FROM cashboxtype ORDER BY name ASC")->fetchAll();
         <div class="form-actions" style="margin-left: 180px; padding-top: 20px;">
             <button type="submit" name="save_type" class="btn save">Typ speichern</button>
             <?php if($edit): ?>
-                <a href="/module/cashboxtype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/cashboxtype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -103,8 +103,8 @@ $list = $pdo->query("SELECT * FROM cashboxtype ORDER BY name ASC")->fetchAll();
                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                 <td style="font-size: 13px; color: #666;"><?= htmlspecialchars($t['note'] ?? '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/module/cashboxtype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/cashboxtype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
+                    <a href="/cashboxtype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/cashboxtype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

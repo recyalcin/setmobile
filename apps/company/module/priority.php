@@ -25,19 +25,19 @@ if (isset($_POST['save_priority']) || isset($_POST['duplicate_priority'])) {
         $sql = "UPDATE ticketpriority SET name=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/priority&msg=updated";
+        $redirect = "/priority&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO ticketpriority (name, note, createdat) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/priority&msg=created";
+        $redirect = "/priority&msg=created";
     }
 }
 
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM ticketpriority WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/priority&msg=deleted";
+    $redirect = "/priority&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -57,10 +57,10 @@ $list = $pdo->query("SELECT * FROM ticketpriority ORDER BY id ASC")->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #ef4444;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">⚡ Ticket-Prioritäten</h3>
-        <a href="/?route=module/priority&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Priorität</a>
+        <a href="/priority&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Priorität</a>
     </div>
 
-    <form method="post" action="/?route=module/priority" class="form-container">
+    <form method="post" action="/priority" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -81,12 +81,12 @@ $list = $pdo->query("SELECT * FROM ticketpriority ORDER BY id ASC")->fetchAll();
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/priority&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Priorität wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/priority&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Priorität wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/priority" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/priority" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_priority" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_priority" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#ef4444;">
@@ -116,7 +116,7 @@ $list = $pdo->query("SELECT * FROM ticketpriority ORDER BY id ASC")->fetchAll();
                 </td>
                 <td><small style="color:#64748b;"><?= htmlspecialchars($p['note'] ?? '-') ?></small></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/priority&edit=<?= $p['id'] ?>" class="edit-link" style="color:#ef4444;">✎</a>
+                    <a href="/priority&edit=<?= $p['id'] ?>" class="edit-link" style="color:#ef4444;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

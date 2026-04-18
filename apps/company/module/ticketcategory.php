@@ -25,19 +25,19 @@ if (isset($_POST['save_category']) || isset($_POST['duplicate_category'])) {
         $sql = "UPDATE ticketcategory SET name=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/ticketcategory&msg=updated";
+        $redirect = "/ticketcategory&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO ticketcategory (name, note, createdat) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/ticketcategory&msg=created";
+        $redirect = "/ticketcategory&msg=created";
     }
 }
 
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM ticketcategory WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/ticketcategory&msg=deleted";
+    $redirect = "/ticketcategory&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -57,10 +57,10 @@ $list = $pdo->query("SELECT * FROM ticketcategory ORDER BY name ASC")->fetchAll(
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #f59e0b;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">📂 Ticket-Kategorien</h3>
-        <a href="/?route=module/ticketcategory&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Kategorie</a>
+        <a href="/ticketcategory&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Kategorie</a>
     </div>
 
-    <form method="post" action="/?route=module/ticketcategory" class="form-container">
+    <form method="post" action="/ticketcategory" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -81,12 +81,12 @@ $list = $pdo->query("SELECT * FROM ticketcategory ORDER BY name ASC")->fetchAll(
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/ticketcategory&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diese Kategorie wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/ticketcategory&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diese Kategorie wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/ticketcategory" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/ticketcategory" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_category" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_category" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#f59e0b;">
@@ -114,7 +114,7 @@ $list = $pdo->query("SELECT * FROM ticketcategory ORDER BY name ASC")->fetchAll(
                 <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
                 <td><small style="color:#64748b;"><?= htmlspecialchars($c['note'] ?? '-') ?></small></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/ticketcategory&edit=<?= $c['id'] ?>" class="edit-link" style="color:#f59e0b;">✎</a>
+                    <a href="/ticketcategory&edit=<?= $c['id'] ?>" class="edit-link" style="color:#f59e0b;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

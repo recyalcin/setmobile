@@ -14,7 +14,7 @@ if (isset($_GET['delete'])) {
     // Optional: Hier könnte man prüfen, ob noch Mitarbeiter diesen Job-Titel nutzen
     $stmt = $pdo->prepare("DELETE FROM jobtitle WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/jobtitle&msg=deleted";
+    $redirect = "/jobtitle&msg=deleted";
 }
 
 if (isset($_POST['save_jobtitle'])) {
@@ -25,11 +25,11 @@ if (isset($_POST['save_jobtitle'])) {
     if (!empty($id)) {
         $sql = "UPDATE jobtitle SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/?route=module/jobtitle&msg=updated";
+        $redirect = "/jobtitle&msg=updated";
     } else {
         $sql = "INSERT INTO jobtitle (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/?route=module/jobtitle&msg=created";
+        $redirect = "/jobtitle&msg=created";
     }
 }
 
@@ -59,7 +59,7 @@ if (isset($_GET['edit'])) {
 
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <h3 style="margin-top:0;">💼 <?= $edit ? 'Job-Titel bearbeiten' : 'Neuer Job-Titel' ?></h3>
-    <form method="post" action="/?route=module/jobtitle" class="form-container">
+    <form method="post" action="/jobtitle" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
             <div class="form-row">
@@ -73,7 +73,7 @@ if (isset($_GET['edit'])) {
         </div>
         <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
             <?php if($edit): ?>
-                <a href="/?route=module/jobtitle" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/jobtitle" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_jobtitle" class="btn save" style="background: #3b82f6; padding: 8px 25px;">
                 <?= $edit ? 'Aktualisieren' : 'Hinzufügen' ?>
@@ -105,8 +105,8 @@ if (isset($_GET['edit'])) {
                 <td><strong><?= htmlspecialchars($r['name']) ?></strong></td>
                 <td style="color: #64748b; font-size: 13px;"><?= htmlspecialchars($r['note'] ?? '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/jobtitle&edit=<?= $r['id'] ?>" class="action-link" style="text-decoration:none; margin-right:10px;">✎</a>
-                    <a href="/?route=module/jobtitle&delete=<?= $r['id'] ?>" 
+                    <a href="/jobtitle&edit=<?= $r['id'] ?>" class="action-link" style="text-decoration:none; margin-right:10px;">✎</a>
+                    <a href="/jobtitle&delete=<?= $r['id'] ?>" 
                        onclick="return confirm('Diesen Job-Titel wirklich löschen?')" 
                        style="text-decoration:none; color: #dc2626;">🗑</a>
                 </td>

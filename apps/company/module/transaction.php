@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM transaction WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/transaction&msg=deleted";
+    $redirect = "/transaction&msg=deleted";
 }
 
 if (isset($_POST['save_transaction'])) {
@@ -37,11 +37,11 @@ if (isset($_POST['save_transaction'])) {
         $sql = "UPDATE transaction SET transactiontypeid=?, officialtypeid=?, date=?, fromtypeid=?, fromid=?, totypeid=?, toid=?, amount=?, description=?, vehicleid=?, personid=?, note=?, updateddate=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/transaction&msg=updated";
+        $redirect = "/transaction&msg=updated";
     } else {
         $sql = "INSERT INTO transaction (transactiontypeid, officialtypeid, date, fromtypeid, fromid, totypeid, toid, amount, description, vehicleid, personid, note, createddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/transaction&msg=created";
+        $redirect = "/transaction&msg=created";
     }
 }
 
@@ -98,7 +98,7 @@ $list = $listStmt->fetchAll();
 <?php if (isset($_GET['edit'])): ?>
     <div class="card main-card-style" style="border-left: 5px solid #3b82f6;">
         <h3 style="margin-top:0; margin-bottom: 20px;">💸 <?= (isset($edit['id']) ? 'Buchung bearbeiten' : (isset($_GET['duplicate']) ? 'Buchung duplizieren' : 'Neue Buchung erfassen')) ?></h3>
-        <form method="post" action="/?route=module/transaction" class="form-container">
+        <form method="post" action="/transaction" class="form-container">
             <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
                 <div>
@@ -134,10 +134,10 @@ $list = $listStmt->fetchAll();
             
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
                 <?php if(isset($edit['id'])): ?>
-                    <a href="/?route=module/transaction&edit=<?= $edit['id'] ?>&duplicate=1" class="btn-action duplicate-bg">👯 Duplizieren</a>
-                    <a href="/?route=module/transaction&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/transaction&edit=<?= $edit['id'] ?>&duplicate=1" class="btn-action duplicate-bg">👯 Duplizieren</a>
+                    <a href="/transaction&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
-                <a href="/?route=module/transaction" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/transaction" class="btn-action cancel-bg">Abbrechen</a>
                 <button type="submit" name="save_transaction" class="btn save" style="padding: 10px 40px; font-weight: bold;"> <?= isset($edit['id']) ? 'Aktualisieren' : 'Speichern' ?> </button>
             </div>
         </form>
@@ -145,7 +145,7 @@ $list = $listStmt->fetchAll();
 <?php else: ?>
     <div class="card main-card-style" style="display:flex; justify-content: space-between; align-items: center; border-left: 5px solid #3b82f6;">
         <h2 style="margin:0; font-size: 20px; color: #1e293b;">💸 Transaktion</h2>
-        <a href="/?route=module/transaction&edit=new" class="btn save" style="text-decoration:none; padding: 10px 25px; display:flex; align-items:center; gap:8px;"><span>+</span> Neue Buchung</a>
+        <a href="/transaction&edit=new" class="btn save" style="text-decoration:none; padding: 10px 25px; display:flex; align-items:center; gap:8px;"><span>+</span> Neue Buchung</a>
     </div>
 <?php endif; ?>
 
@@ -155,7 +155,7 @@ $list = $listStmt->fetchAll();
         <div style="flex: 3; min-width: 250px;"><label class="filter-label">🔍 Globale Suche</label><input type="text" name="q" value="<?= htmlspecialchars($f_q) ?>" placeholder="Suche..." class="filter-input"></div>
         <div style="flex: 1; min-width: 140px;"><label class="filter-label">Von</label><input type="date" name="start" value="<?= htmlspecialchars($f_start) ?>" class="filter-input"></div>
         <div style="flex: 1; min-width: 140px;"><label class="filter-label">Bis</label><input type="date" name="end" value="<?= htmlspecialchars($f_end) ?>" class="filter-input"></div>
-        <div style="display: flex; gap: 8px;"><button type="submit" class="btn-filter filter-save">Suchen</button><a href="/?route=module/transaction" class="btn-filter filter-reset">Reset</a></div>
+        <div style="display: flex; gap: 8px;"><button type="submit" class="btn-filter filter-save">Suchen</button><a href="/transaction" class="btn-filter filter-reset">Reset</a></div>
     </form>
 </div>
 
@@ -182,7 +182,7 @@ $list = $listStmt->fetchAll();
                 </td>
                 <td style="text-align:right; font-weight: bold; font-size: 15px; color: <?= ($t['officialtypeid'] == 2) ? '#94a3b8' : '#1e293b' ?>;"><?= number_format($t['amount'], 2, ',', '.') ?> €</td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/transaction&edit=<?= $t['id'] ?>" class="action-link edit-link" title="Bearbeiten">✎</a>
+                    <a href="/transaction&edit=<?= $t['id'] ?>" class="action-link edit-link" title="Bearbeiten">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

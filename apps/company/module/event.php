@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM event WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/event&msg=deleted";
+    $redirect = "/event&msg=deleted";
 }
 
 if (isset($_POST['save_event'])) {
@@ -34,12 +34,12 @@ if (isset($_POST['save_event'])) {
         $sql = "UPDATE event SET eventtypeid=?, name=?, date=?, timefrom=?, timeto=?, locationname=?, locationmapslink=?, note=?, updateddate=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/event&msg=updated";
+        $redirect = "/event&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO event (eventtypeid, name, date, timefrom, timeto, locationname, locationmapslink, note, createddate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/event&msg=created";
+        $redirect = "/event&msg=created";
     }
 }
 
@@ -104,7 +104,7 @@ $list = $listStmt->fetchAll();
         <h3 style="margin:0;">📅 <?= $edit ? 'Event bearbeiten' : 'Neues Event planen' ?></h3>
     </div>
     
-    <form method="post" action="/?route=module/event" class="form-container">
+    <form method="post" action="/event" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -136,8 +136,8 @@ $list = $listStmt->fetchAll();
 
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <?php if($edit): ?>
-                <a href="/?route=module/event&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Dieses Event wirklich löschen?')">🗑 Löschen</a>
-                <a href="/?route=module/event" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/event&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Dieses Event wirklich löschen?')">🗑 Löschen</a>
+                <a href="/event" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_event" class="btn save" style="padding: 10px 40px; font-weight: bold; margin: 0; background: #8b5cf6;">
                 <?= $edit ? 'Aktualisieren' : 'Speichern' ?>
@@ -154,7 +154,7 @@ $list = $listStmt->fetchAll();
         <div style="flex: 1; min-width: 130px;"><label class="filter-label">Bis</label><input type="date" name="end" value="<?= htmlspecialchars($f_end) ?>" class="filter-input"></div>
         <div style="display: flex; gap: 5px;">
             <button type="submit" class="btn save" style="height: 38px; background: #64748b;">Suchen</button>
-            <a href="/?route=module/event" class="btn reset-btn" style="height: 38px; display:flex; align-items:center; text-decoration:none; background:#cbd5e1; color:#333; padding: 0 15px; border-radius:4px; font-size:13px;">Reset</a>
+            <a href="/event" class="btn reset-btn" style="height: 38px; display:flex; align-items:center; text-decoration:none; background:#cbd5e1; color:#333; padding: 0 15px; border-radius:4px; font-size:13px;">Reset</a>
         </div>
     </form>
 </div>
@@ -190,8 +190,8 @@ $list = $listStmt->fetchAll();
                     <?php endif; ?>
                 </td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/event&edit=<?= $e['id'] ?>" class="action-link edit-link" title="Bearbeiten" style="font-size: 18px; text-decoration: none; margin-right: 10px;">✎</a>
-                    <a href="/?route=module/event&delete=<?= $e['id'] ?>" 
+                    <a href="/event&edit=<?= $e['id'] ?>" class="action-link edit-link" title="Bearbeiten" style="font-size: 18px; text-decoration: none; margin-right: 10px;">✎</a>
+                    <a href="/event&delete=<?= $e['id'] ?>" 
                        class="action-link delete-link" 
                        title="Löschen" 
                        style="font-size: 18px; text-decoration: none; color: #dc2626;"
@@ -205,7 +205,7 @@ $list = $listStmt->fetchAll();
 
     <?php if ($totalPages > 1): ?>
     <div class="pagination" style="margin-top: 25px; display: flex; justify-content: center; gap: 8px;">
-        <?php $pUrl = "/?route=module/event&q=".urlencode($f_q)."&start=".$f_start."&end=".$f_end."&p="; ?>
+        <?php $pUrl = "/event&q=".urlencode($f_q)."&start=".$f_start."&end=".$f_end."&p="; ?>
         <?php for ($i = 1; $i <= $totalPages; $i++): ?><a href="<?= $pUrl . $i ?>" class="page-link <?= ($i == $page) ? 'active' : '' ?>"><?= $i ?></a><?php endfor; ?>
     </div>
     <?php endif; ?>

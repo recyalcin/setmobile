@@ -16,7 +16,7 @@ $sql = "CREATE TABLE IF NOT EXISTS employeetype (
 try {
     $pdo->exec($sql);
     echo "<div class='card'><h3>Schema Update</h3><p>Tabelle <strong>employeetype</strong> wurde erfolgreich aktualisiert.</p>
-          <a href='/module/employeetype' class='btn save'>Zum Modul</a></div>";
+          <a href='/employeetype' class='btn save'>Zum Modul</a></div>";
 } catch (PDOException $e) {
     echo "<div class='card' style='color:red;'>Fehler: " . $e->getMessage() . "</div>";
 }

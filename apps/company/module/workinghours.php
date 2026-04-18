@@ -59,20 +59,20 @@ if (isset($_POST['save_workinghours']) || isset($_POST['duplicate_workinghours']
         $sql = "UPDATE workinghours SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/workinghours&msg=updated";
+        $redirect = "/workinghours&msg=updated";
     } else {
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO workinghours ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/workinghours&msg=created";
+        $redirect = "/workinghours&msg=created";
     }
 }
 
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM workinghours WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/workinghours&msg=deleted";
+    $redirect = "/workinghours&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -251,10 +251,10 @@ $days_de_short = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🕒 Arbeitszeit-Management</h3>
-        <a href="/?route=module/workinghours&edit=new" class="btn-action neu-bg">+ Neu</a>
+        <a href="/workinghours&edit=new" class="btn-action neu-bg">+ Neu</a>
     </div>
 
-    <form method="post" action="/?route=module/workinghours" class="form-container">
+    <form method="post" action="/workinghours" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 30px;">
             <div>
@@ -306,7 +306,7 @@ $days_de_short = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
     <div style="width: 130px;"><label style="font-size:11px; font-weight:bold;">Bis</label><input type="text" class="dt-picker-date" id="f_to" name="f_to" value="<?= htmlspecialchars($filter_to) ?>"></div>
     <button type="button" onclick="setLastMonth()" class="btn-action">Letzter Monat</button>
     <button type="submit" class="btn-action" style="background:#64748b; color:white;">🔍 Filtern</button>
-    <a href="/?route=module/workinghours" class="btn-action">✕</a>
+    <a href="/workinghours" class="btn-action">✕</a>
 </form>
 
 <div class="card">
@@ -345,7 +345,7 @@ $days_de_short = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
                 <td><?= ($v04_l == 0) ? '-' : number_format($v04_l, 2, ',', '.') ?></td>
                 <td><?= ($v20_l == 0) ? '-' : number_format($v20_l, 2, ',', '.') ?></td>
                 <td><span class="badge"><?= ($vT_l == 0 && $isEmptyList) ? '-' : number_format($vT_l, 2, ',', '.') . ' h' ?></span></td>
-                <td style="text-align:right;"><a href="/?route=module/workinghours&edit=<?= $w['id'] ?>">✎</a></td>
+                <td style="text-align:right;"><a href="/workinghours&edit=<?= $w['id'] ?>">✎</a></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
@@ -361,7 +361,7 @@ $days_de_short = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
     </table>
     <?php if(!empty($list) && $filter_emp): ?>
         <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-            <a href="/?route=module/workinghours&export=pdf&f_emp=<?= $filter_emp ?>&f_from=<?= $filter_from ?>&f_to=<?= $filter_to ?>" target="_blank" class="btn-action" style="background:#ef4444; color:white;">📄 PDF (Mindestlohn)</a>
+            <a href="/workinghours&export=pdf&f_emp=<?= $filter_emp ?>&f_from=<?= $filter_from ?>&f_to=<?= $filter_to ?>" target="_blank" class="btn-action" style="background:#ef4444; color:white;">📄 PDF (Mindestlohn)</a>
         </div>
     <?php endif; ?>
 </div>

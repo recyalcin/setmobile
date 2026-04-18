@@ -27,7 +27,7 @@ try {
         }
     }
     echo "<p>Datenbank-Check abgeschlossen.</p>";
-    echo "<br><a href='/?route=module/vehicleservicetype' class='btn save' style='text-decoration:none; padding:10px 20px; background:#10b981; color:white; border-radius:4px;'>Zum Modul</a>";
+    echo "<br><a href='/vehicleservicetype' class='btn save' style='text-decoration:none; padding:10px 20px; background:#10b981; color:white; border-radius:4px;'>Zum Modul</a>";
 
 } catch (PDOException $e) {
     echo "<p style='color:red;'>Fehler: " . htmlspecialchars($e->getMessage()) . "</p>";

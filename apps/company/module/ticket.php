@@ -67,7 +67,7 @@ if (isset($_GET['resolve'])) {
             ->execute([$resolvedStatusId, $resId]);
     }
     normalizeSortOrder($pdo);
-    $redirect = "/?route=module/ticket&msg=resolved";
+    $redirect = "/ticket&msg=resolved";
 }
 
 // MOVE LOGIK (Anfang, Hoch, Runter, Ende)
@@ -99,7 +99,7 @@ if (isset($_GET['move']) && isset($_GET['dir'])) {
     }
     
     if ($changed) { normalizeSortOrder($pdo); }
-    $redirect = "/?route=module/ticket";
+    $redirect = "/ticket";
 }
 
 // DUPLIZIEREN
@@ -164,14 +164,14 @@ if (isset($_POST['save_ticket'])) {
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
         normalizeSortOrder($pdo);
-        $redirect = "/?route=module/ticket&msg=updated";
+        $redirect = "/ticket&msg=updated";
     } else {
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO ticket ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
         normalizeSortOrder($pdo);
-        $redirect = "/?route=module/ticket&msg=created";
+        $redirect = "/ticket&msg=created";
     }
 }
 
@@ -180,7 +180,7 @@ if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM ticket WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
     normalizeSortOrder($pdo);
-    $redirect = "/?route=module/ticket&msg=deleted";
+    $redirect = "/ticket&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -269,11 +269,11 @@ if ($loggedInPersonId > 0) {
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; <?= $showForm ? 'margin-bottom: 15px;' : '' ?>">
         <h3 style="margin:0;">🎫 Ticket</h3>
-        <a href="/?route=module/ticket&edit=new" class="btn-action neu-bg">+ Neues Ticket</a>
+        <a href="/ticket&edit=new" class="btn-action neu-bg">+ Neues Ticket</a>
     </div>
     
     <?php if ($showForm): ?>
-    <form method="post" action="/?route=module/ticket" class="form-container">
+    <form method="post" action="/ticket" class="form-container">
         <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id'] ?? '') ?>">
         <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 30px;">
             <div>
@@ -315,9 +315,9 @@ if ($loggedInPersonId > 0) {
             </div>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <div><?php if(!empty($edit['id'])): ?><a href="/?route=module/ticket&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
+            <div><?php if(!empty($edit['id'])): ?><a href="/ticket&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
             <div style="display: flex; gap: 10px;">
-                <a href="/?route=module/ticket" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/ticket" class="btn-action cancel-bg">Abbrechen</a>
                 <?php if(!empty($edit['id'])): ?><button type="submit" name="duplicate_ticket" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button><?php endif; ?>
                 <button type="submit" name="save_ticket" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#3b82f6;"><?= (!empty($edit['id'])) ? '💾 Update' : '💾 Speichern' ?></button>
             </div>
@@ -331,7 +331,7 @@ if ($loggedInPersonId > 0) {
         <input type="hidden" name="route" value="module/ticket">
         <input type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Suche in Betreff, Beschreibung, Notiz oder ID..." style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         <button type="submit" class="btn-action neu-bg" style="cursor:pointer;">🔍 Suchen</button>
-        <?php if(!empty($searchTerm)): ?><a href="/?route=module/ticket" class="btn-action cancel-bg">✖ Filter löschen</a><?php endif; ?>
+        <?php if(!empty($searchTerm)): ?><a href="/ticket" class="btn-action cancel-bg">✖ Filter löschen</a><?php endif; ?>
     </form>
 </div>
 
@@ -341,7 +341,7 @@ if ($loggedInPersonId > 0) {
         <tbody>
             <?php foreach ($list as $t): ?>
             <tr>
-                <td><div style="display: flex; align-items: center; gap: 10px;"><div class="sort-group"><a href="/?route=module/ticket&move=<?= $t['id'] ?>&dir=top" class="btn-sort">Anfang</a><a href="/?route=module/ticket&move=<?= $t['id'] ?>&dir=up" class="btn-sort">Hoch</a><a href="/?route=module/ticket&move=<?= $t['id'] ?>&dir=down" class="btn-sort">Runter</a><a href="/?route=module/ticket&move=<?= $t['id'] ?>&dir=bottom" class="btn-sort">Ende</a></div><span style="font-weight: bold; color: #1e40af;"><?= $t['sortorder'] ?? 0 ?></span></div></td>
+                <td><div style="display: flex; align-items: center; gap: 10px;"><div class="sort-group"><a href="/ticket&move=<?= $t['id'] ?>&dir=top" class="btn-sort">Anfang</a><a href="/ticket&move=<?= $t['id'] ?>&dir=up" class="btn-sort">Hoch</a><a href="/ticket&move=<?= $t['id'] ?>&dir=down" class="btn-sort">Runter</a><a href="/ticket&move=<?= $t['id'] ?>&dir=bottom" class="btn-sort">Ende</a></div><span style="font-weight: bold; color: #1e40af;"><?= $t['sortorder'] ?? 0 ?></span></div></td>
                 <td><small>#<?= $t['id'] ?></small></td>
                 <td><strong><?= htmlspecialchars($t['subject']) ?></strong><br><small style="color:#64748b;"><?= htmlspecialchars($t['type_name'] ?? '-') ?></small></td>
                 <td><small><?= htmlspecialchars($t['requester_lname'] ?? '-') ?></small></td>
@@ -349,8 +349,8 @@ if ($loggedInPersonId > 0) {
                 <td><small style="color: #0369a1;">📅 G: <?= $t['scheduledat'] ? date('d.m.y H:i', strtotime($t['scheduledat'])) : '-' ?></small><br><small style="color: #64748b;">⌛ F: <?= $t['dueat'] ? date('d.m.y H:i', strtotime($t['dueat'])) : '-' ?></small></td>
                 <td><span class="badge"><?= htmlspecialchars($t['status_name'] ?? 'Neu') ?></span></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/ticket&resolve=<?= $t['id'] ?>" class="resolve-link" title="Als erledigt markieren" onclick="return confirm('Ticket als erledigt markieren?')">✔</a>
-                    <a href="/?route=module/ticket&edit=<?= $t['id'] ?>" class="edit-link">✎</a>
+                    <a href="/ticket&resolve=<?= $t['id'] ?>" class="resolve-link" title="Als erledigt markieren" onclick="return confirm('Ticket als erledigt markieren?')">✔</a>
+                    <a href="/ticket&edit=<?= $t['id'] ?>" class="edit-link">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

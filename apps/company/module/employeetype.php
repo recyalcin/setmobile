@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM employeetype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/employeetype?msg=deleted";
+    $redirect = "/employeetype?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -26,12 +26,12 @@ if (isset($_POST['save_type'])) {
         // UPDATE
         $sql = "UPDATE employeetype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/module/employeetype?msg=updated";
+        $redirect = "/employeetype?msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO employeetype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/module/employeetype?msg=created";
+        $redirect = "/employeetype?msg=created";
     }
 }
 
@@ -64,7 +64,7 @@ $list = $pdo->query("SELECT * FROM employeetype ORDER BY name ASC")->fetchAll();
 
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? 'Mitarbeiter-Typ bearbeiten' : 'Neuen Mitarbeiter-Typ anlegen' ?></h3>
-    <form method="post" action="/module/employeetype" class="form-container">
+    <form method="post" action="/employeetype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -80,7 +80,7 @@ $list = $pdo->query("SELECT * FROM employeetype ORDER BY name ASC")->fetchAll();
         <div class="form-actions" style="margin-left: 180px; padding-left: 20px;">
             <button type="submit" name="save_type" class="btn save">Speichern</button>
             <?php if($edit): ?>
-                <a href="/module/employeetype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/employeetype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -104,8 +104,8 @@ $list = $pdo->query("SELECT * FROM employeetype ORDER BY name ASC")->fetchAll();
                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                 <td style="font-size: 13px; color: #666;"><?= htmlspecialchars($t['note'] ?? '') ?></td>
                 <td style="text-align:right;">
-                    <a href="/module/employeetype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/employeetype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
+                    <a href="/employeetype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/employeetype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

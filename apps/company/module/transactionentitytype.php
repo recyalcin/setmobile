@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM transactionentitytype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/transactionentitytype?msg=deleted";
+    $redirect = "/transactionentitytype?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -26,11 +26,11 @@ if (isset($_POST['save_entitytype'])) {
     if (!empty($id)) {
         $sql = "UPDATE transactionentitytype SET name=?, tablename=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $tablename, $note, $id]);
-        $redirect = "/module/transactionentitytype?msg=updated";
+        $redirect = "/transactionentitytype?msg=updated";
     } else {
         $sql = "INSERT INTO transactionentitytype (name, tablename, note, createddate) VALUES (?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $tablename, $note]);
-        $redirect = "/module/transactionentitytype?msg=created";
+        $redirect = "/transactionentitytype?msg=created";
     }
 }
 
@@ -65,7 +65,7 @@ if (isset($_GET['msg'])) {
         Hier definierst du, welche Tabellen als Quelle oder Ziel für Buchungen dienen können.
     </p>
 
-    <form method="post" action="/module/transactionentitytype" class="form-container">
+    <form method="post" action="/transactionentitytype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -86,7 +86,7 @@ if (isset($_GET['msg'])) {
         <div class="form-actions" style="margin-left: 180px; padding-left: 20px;">
             <button type="submit" name="save_entitytype" class="btn save">Typ speichern</button>
             <?php if($edit): ?>
-                <a href="/module/transactionentitytype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/transactionentitytype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -111,8 +111,8 @@ if (isset($_GET['msg'])) {
                 <td><code style="background:#f0f2f5; padding:2px 5px; border-radius:3px; color:#2980b9;"><?= htmlspecialchars($t['tablename']) ?></code></td>
                 <td style="font-size: 12px; color: #777;"><?= htmlspecialchars($t['note'] ?? '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/module/transactionentitytype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/transactionentitytype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
+                    <a href="/transactionentitytype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/transactionentitytype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

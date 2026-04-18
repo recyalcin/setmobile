@@ -22,12 +22,12 @@ if (isset($_POST['save_status']) || isset($_POST['duplicate_status'])) {
         $sql = "UPDATE tripstatus SET name=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/tripstatus&msg=updated";
+        $redirect = "/tripstatus&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO tripstatus (name, note, createdat) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/tripstatus&msg=created";
+        $redirect = "/tripstatus&msg=created";
     }
 }
 
@@ -35,7 +35,7 @@ if (isset($_POST['save_status']) || isset($_POST['duplicate_status'])) {
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM tripstatus WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/tripstatus&msg=deleted";
+    $redirect = "/tripstatus&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -55,10 +55,10 @@ $list = $pdo->query("SELECT * FROM tripstatus ORDER BY id ASC")->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #f59e0b;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">⚙️ Fahrt-Status Definitionen</h3>
-        <a href="/?route=module/tripstatus&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neuer Status</a>
+        <a href="/tripstatus&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neuer Status</a>
     </div>
 
-    <form method="post" action="/?route=module/tripstatus" class="form-container">
+    <form method="post" action="/tripstatus" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -75,12 +75,12 @@ $list = $pdo->query("SELECT * FROM tripstatus ORDER BY id ASC")->fetchAll();
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/tripstatus&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Status wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/tripstatus&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Status wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/tripstatus" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/tripstatus" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_status" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_status" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#f59e0b;">
@@ -108,7 +108,7 @@ $list = $pdo->query("SELECT * FROM tripstatus ORDER BY id ASC")->fetchAll();
                 <td><span class="status-badge"><?= htmlspecialchars($item['name']) ?></span></td>
                 <td><span style="color:#64748b; font-size:12px;"><?= htmlspecialchars($item['note'] ?: '-') ?></span></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/tripstatus&edit=<?= $item['id'] ?>" class="edit-link" style="color:#f59e0b;">✎</a>
+                    <a href="/tripstatus&edit=<?= $item['id'] ?>" class="edit-link" style="color:#f59e0b;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

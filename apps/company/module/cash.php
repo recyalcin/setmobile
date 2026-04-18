@@ -6,7 +6,7 @@
 if (!isset($pdo)) { die("Kein direkter Zugriff."); }
 
 $message = '';
-$baseurl = "/?route=module/cash";
+$baseurl = "/cash";
 
 // --- 1. AKTIONEN ---
 if (isset($_POST['speichern'])) {

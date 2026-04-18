@@ -15,13 +15,13 @@ if (isset($_GET['delete'])) {
     $check = $pdo->prepare("SELECT COUNT(*) FROM driveractivity WHERE driveractivitytypeid = ?");
     $check->execute([$_GET['delete']]);
     if ($check->fetchColumn() > 0) {
-        echo "<script>alert('Löschen nicht möglich: Dieser Typ wird bereits in Aktivitäten verwendet.'); window.location.href='/?route=module/driveractivitytype';</script>";
+        echo "<script>alert('Löschen nicht möglich: Dieser Typ wird bereits in Aktivitäten verwendet.'); window.location.href='/driveractivitytype';</script>";
         exit;
     }
     
     $stmt = $pdo->prepare("DELETE FROM driveractivitytype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/driveractivitytype&msg=deleted";
+    $redirect = "/driveractivitytype&msg=deleted";
 }
 
 if (isset($_POST['save_type'])) {
@@ -32,11 +32,11 @@ if (isset($_POST['save_type'])) {
     if (!empty($id)) {
         $sql = "UPDATE driveractivitytype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/?route=module/driveractivitytype&msg=updated";
+        $redirect = "/driveractivitytype&msg=updated";
     } else {
         $sql = "INSERT INTO driveractivitytype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/?route=module/driveractivitytype&msg=created";
+        $redirect = "/driveractivitytype&msg=created";
     }
 }
 
@@ -59,7 +59,7 @@ $list = $pdo->query("SELECT * FROM driveractivitytype ORDER BY name ASC")->fetch
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #64748b;">
     <h3 style="margin-bottom: 15px;">⚙️ <?= $edit ? 'Aktivitätstyp bearbeiten' : 'Neuen Aktivitätstyp anlegen' ?></h3>
     
-    <form method="post" action="/?route=module/driveractivitytype" class="form-container">
+    <form method="post" action="/driveractivitytype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -74,8 +74,8 @@ $list = $pdo->query("SELECT * FROM driveractivitytype ORDER BY name ASC")->fetch
 
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <?php if($edit): ?>
-                <a href="/?route=module/driveractivitytype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Typ wirklich löschen?')">🗑 Löschen</a>
-                <a href="/?route=module/driveractivitytype" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/driveractivitytype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Typ wirklich löschen?')">🗑 Löschen</a>
+                <a href="/driveractivitytype" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_type" class="btn save" style="background:#64748b; padding: 10px 40px;">Speichern</button>
         </div>
@@ -99,7 +99,7 @@ $list = $pdo->query("SELECT * FROM driveractivitytype ORDER BY name ASC")->fetch
                 <td><strong><?= htmlspecialchars($item['name']) ?></strong></td>
                 <td style="font-size: 12px; color: #64748b;"><?= htmlspecialchars($item['note'] ?: '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/driveractivitytype&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px; text-decoration: none;">✎</a>
+                    <a href="/driveractivitytype&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px; text-decoration: none;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

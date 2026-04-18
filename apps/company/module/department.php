@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM department WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/department?msg=deleted";
+    $redirect = "/department?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN (INSERT & UPDATE) ---
@@ -25,12 +25,12 @@ if (isset($_POST['save_department'])) {
         // UPDATE
         $sql = "UPDATE department SET name=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $id]);
-        $redirect = "/module/department?msg=updated";
+        $redirect = "/department?msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO department (name, createddate) VALUES (?, NOW())";
         $pdo->prepare($sql)->execute([$name]);
-        $redirect = "/module/department?msg=created";
+        $redirect = "/department?msg=created";
     }
 }
 
@@ -64,7 +64,7 @@ $list = $pdo->query("SELECT * FROM department ORDER BY name ASC")->fetchAll();
 
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? 'Abteilung bearbeiten' : 'Neue Abteilung anlegen' ?></h3>
-    <form method="post" action="/module/department" class="form-container">
+    <form method="post" action="/department" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -75,7 +75,7 @@ $list = $pdo->query("SELECT * FROM department ORDER BY name ASC")->fetchAll();
         <div class="form-actions" style="margin-left: 180px; padding-left: 20px;">
             <button type="submit" name="save_department" class="btn save">Abteilung speichern</button>
             <?php if($edit): ?>
-                <a href="/module/department" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/department" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -97,8 +97,8 @@ $list = $pdo->query("SELECT * FROM department ORDER BY name ASC")->fetchAll();
                 <td style="color:#aaa;">#<?= $d['id'] ?></td>
                 <td><strong><?= htmlspecialchars($d['name']) ?></strong></td>
                 <td style="text-align:right;">
-                    <a href="/module/department?edit=<?= $d['id'] ?>" class="action-link edit-link" title="Bearbeiten">✎</a>
-                    <a href="/module/department?delete=<?= $d['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diese Abteilung wirklich löschen?')" title="Löschen">🗑</a>
+                    <a href="/department?edit=<?= $d['id'] ?>" class="action-link edit-link" title="Bearbeiten">✎</a>
+                    <a href="/department?delete=<?= $d['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diese Abteilung wirklich löschen?')" title="Löschen">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

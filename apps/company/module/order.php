@@ -1,7 +1,7 @@
 <?php
 // module/trip/order.php
 // Prüfen, ob wir über die index.php kommen
-if (!isset($pdo)) { header("Location: /module/trip/order"); exit; }
+if (!isset($pdo)) { header("Location: /trip/order"); exit; }
 
 $id = $_GET['edit'] ?? $_POST['id'] ?? '';
 $customerid = 0; $pickuplocation = ''; $destination = ''; 

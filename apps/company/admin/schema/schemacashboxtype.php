@@ -32,7 +32,7 @@ try {
     }
 
     echo "<p>Check abgeschlossen. Die Typen-Tabelle ist bereit für den Einsatz.</p>";
-    echo "<br><a href='/module/cashboxtype' class='btn save'>Zum Modul</a>";
+    echo "<br><a href='/cashboxtype' class='btn save'>Zum Modul</a>";
 
 } catch (PDOException $e) {
     echo "<p style='color:red;'>Fehler: " . htmlspecialchars($e->getMessage()) . "</p>";

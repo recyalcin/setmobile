@@ -39,14 +39,14 @@ if (isset($_POST['save_trip']) || isset($_POST['duplicate_trip'])) {
         $sql = "UPDATE trip SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/trip&msg=updated";
+        $redirect = "/trip&msg=updated";
     } else {
         // INSERT: Nutzt jetzt createdat
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO trip ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/trip&msg=created";
+        $redirect = "/trip&msg=created";
     }
 }
 
@@ -54,7 +54,7 @@ if (isset($_POST['save_trip']) || isset($_POST['duplicate_trip'])) {
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM trip WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/trip&msg=deleted";
+    $redirect = "/trip&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -133,10 +133,10 @@ foreach ($list as $t) {
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #10b981;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🚕 Fahrten-Management (Trip)</h3>
-        <a href="/?route=module/trip&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Fahrt</a>
+        <a href="/trip&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neue Fahrt</a>
     </div>
 
-    <form method="post" action="/?route=module/trip" class="form-container">
+    <form method="post" action="/trip" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
@@ -214,12 +214,12 @@ foreach ($list as $t) {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/trip&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Fahrt wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/trip&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Fahrt wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/trip" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/trip" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_trip" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_trip" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#10b981;">
@@ -274,7 +274,7 @@ foreach ($list as $t) {
             </div>
             <div style="display: flex; gap: 5px; align-self: flex-end; height: 31px;">
                 <button type="submit" class="btn save-bg" style="flex:1; padding:7px; border:none; border-radius:4px; color:white; font-weight:bold; cursor:pointer; background:#64748b;">🔍 Filtern</button>
-                <a href="/?route=module/trip" class="btn-action cancel-bg" style="padding:7px; text-decoration:none;">✖</a>
+                <a href="/trip" class="btn-action cancel-bg" style="padding:7px; text-decoration:none;">✖</a>
             </div>
         </div>
     </form>
@@ -313,7 +313,7 @@ foreach ($list as $t) {
                 <td><?= $t['tripdistance'] ?: '-' ?></td>
                 <td><span class="badge" style="background:#ecfdf5; color:#065f46;"><?= htmlspecialchars($t['status_name'] ?? 'Unbekannt') ?></span></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/trip&edit=<?= $t['id'] ?>" class="edit-link">✎</a>
+                    <a href="/trip&edit=<?= $t['id'] ?>" class="edit-link">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

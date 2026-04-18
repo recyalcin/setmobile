@@ -183,7 +183,7 @@ if ($gCount > 0) {
         </select>
         <div style="display: flex; gap: 8px;">
             <button type="submit" class="btn-search">🔍 Suchen</button>
-            <a href="/?route=module/performance" class="btn-reset">✖ Reset</a>
+            <a href="/performance" class="btn-reset">✖ Reset</a>
         </div>
     </form>
 </div>

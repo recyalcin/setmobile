@@ -22,12 +22,12 @@ if (isset($_POST['save_triptype']) || isset($_POST['duplicate_triptype'])) {
         $sql = "UPDATE triptype SET name=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/triptype&msg=updated";
+        $redirect = "/triptype&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO triptype (name, note, createdat) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/triptype&msg=created";
+        $redirect = "/triptype&msg=created";
     }
 }
 
@@ -35,7 +35,7 @@ if (isset($_POST['save_triptype']) || isset($_POST['duplicate_triptype'])) {
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM triptype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/triptype&msg=deleted";
+    $redirect = "/triptype&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -55,10 +55,10 @@ $list = $pdo->query("SELECT * FROM triptype ORDER BY name ASC")->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #8b5cf6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🏷️ Fahrt-Typen</h3>
-        <a href="/?route=module/triptype&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neu</a>
+        <a href="/triptype&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neu</a>
     </div>
 
-    <form method="post" action="/?route=module/triptype" class="form-container">
+    <form method="post" action="/triptype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -75,12 +75,12 @@ $list = $pdo->query("SELECT * FROM triptype ORDER BY name ASC")->fetchAll();
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/triptype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Typ wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/triptype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Typ wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/triptype" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/triptype" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_triptype" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_triptype" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#8b5cf6;">
@@ -108,7 +108,7 @@ $list = $pdo->query("SELECT * FROM triptype ORDER BY name ASC")->fetchAll();
                 <td><strong><?= htmlspecialchars($item['name']) ?></strong></td>
                 <td><span style="color:#64748b; font-size:12px;"><?= htmlspecialchars($item['note'] ?: '-') ?></span></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/triptype&edit=<?= $item['id'] ?>" class="edit-link" style="color:#8b5cf6;">✎</a>
+                    <a href="/triptype&edit=<?= $item['id'] ?>" class="edit-link" style="color:#8b5cf6;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

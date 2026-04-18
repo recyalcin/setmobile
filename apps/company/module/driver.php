@@ -16,7 +16,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM driver WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/driver&msg=deleted";
+    $redirect = "/driver&msg=deleted";
 }
 
 // SPEICHERN (INSERT & UPDATE)
@@ -50,7 +50,7 @@ if (isset($_POST['save_driver'])) {
                 note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/driver&msg=updated";
+        $redirect = "/driver&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO driver (
@@ -58,7 +58,7 @@ if (isset($_POST['save_driver'])) {
                 licenseexpirydate, pendorsementissuedate, pendorsementexpirydate, 
                 note, createdat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/driver&msg=created";
+        $redirect = "/driver&msg=created";
     }
 }
 
@@ -120,7 +120,7 @@ $list = $listStmt->fetchAll();
         <h3 style="margin:0;">🪪 <?= $edit ? 'Fahrer bearbeiten' : 'Neuen Fahrer erfassen' ?></h3>
     </div>
     
-    <form method="post" action="/?route=module/driver" class="form-container">
+    <form method="post" action="/driver" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -175,12 +175,12 @@ $list = $listStmt->fetchAll();
 
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <?php if($edit): ?>
-                <a href="/?route=module/driver&delete=<?= $edit['id'] ?>" 
+                <a href="/driver&delete=<?= $edit['id'] ?>" 
                    class="btn-action delete-bg"
                    onclick="return confirm('Diesen Fahrerdatensatz wirklich löschen?')">
                      🗑 Löschen
                 </a>
-                <a href="/?route=module/driver" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/driver" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             
             <button type="submit" name="save_driver" class="btn save" style="padding: 10px 40px; font-weight: bold; margin: 0;">
@@ -196,7 +196,7 @@ $list = $listStmt->fetchAll();
         <div style="flex: 2; min-width: 250px;"><label class="filter-label">🔍 Suche</label><input type="text" name="q" value="<?= htmlspecialchars($f_q) ?>" placeholder="Name oder Notiz..." class="filter-input"></div>
         <div style="display: flex; gap: 5px;">
             <button type="submit" class="btn save" style="height: 38px;">Suchen</button>
-            <a href="/?route=module/driver" class="btn reset-btn" style="height: 38px; display:flex; align-items:center; text-decoration:none; background:#cbd5e1; color:#333; padding: 0 15px; border-radius:4px;">Reset</a>
+            <a href="/driver" class="btn reset-btn" style="height: 38px; display:flex; align-items:center; text-decoration:none; background:#cbd5e1; color:#333; padding: 0 15px; border-radius:4px;">Reset</a>
         </div>
     </form>
 </div>
@@ -241,8 +241,8 @@ $list = $listStmt->fetchAll();
                     <?= !empty($d['pendorsementexpirydate']) ? date('d.m.Y', strtotime($d['pendorsementexpirydate'])) : '<span style="color:#cbd5e1;">-</span>' ?>
                 </td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/driver&edit=<?= $d['id'] ?>" class="action-link edit-link" title="Bearbeiten" style="font-size: 18px; text-decoration: none; margin-right: 10px;">✎</a>
-                    <a href="/?route=module/driver&delete=<?= $d['id'] ?>" 
+                    <a href="/driver&edit=<?= $d['id'] ?>" class="action-link edit-link" title="Bearbeiten" style="font-size: 18px; text-decoration: none; margin-right: 10px;">✎</a>
+                    <a href="/driver&delete=<?= $d['id'] ?>" 
                        class="action-link delete-link" 
                        title="Löschen" 
                        style="font-size: 18px; text-decoration: none; color: #dc2626;"
@@ -255,7 +255,7 @@ $list = $listStmt->fetchAll();
 
     <?php if ($totalPages > 1): ?>
     <div class="pagination" style="margin-top: 25px; display: flex; justify-content: center; gap: 8px;">
-        <?php $pUrl = "/?route=module/driver&q=".urlencode($f_q)."&p="; ?>
+        <?php $pUrl = "/driver&q=".urlencode($f_q)."&p="; ?>
         <?php for ($i = 1; $i <= $totalPages; $i++): ?><a href="<?= $pUrl . $i ?>" class="page-link <?= ($i == $page) ? 'active' : '' ?>"><?= $i ?></a><?php endfor; ?>
     </div>
     <?php endif; ?>

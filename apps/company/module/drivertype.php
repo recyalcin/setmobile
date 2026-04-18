@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM drivertype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/drivertype&msg=deleted";
+    $redirect = "/drivertype&msg=deleted";
 }
 
 if (isset($_POST['save_drivertype'])) {
@@ -25,12 +25,12 @@ if (isset($_POST['save_drivertype'])) {
         // UPDATE
         $sql = "UPDATE drivertype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/?route=module/drivertype&msg=updated";
+        $redirect = "/drivertype&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO drivertype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/?route=module/drivertype&msg=created";
+        $redirect = "/drivertype&msg=created";
     }
 }
 
@@ -66,7 +66,7 @@ $list = $stmt->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #6366f1;">
     <h3 style="margin-top:0;">🏷️ <?= $edit ? 'Fahrertyp bearbeiten' : 'Neuen Fahrertyp anlegen' ?></h3>
     
-    <form method="post" action="/?route=module/drivertype" class="form-container">
+    <form method="post" action="/drivertype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -81,8 +81,8 @@ $list = $stmt->fetchAll();
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <?php if($edit): ?>
-                <a href="/?route=module/drivertype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Typ wirklich löschen?')">🗑 Löschen</a>
-                <a href="/?route=module/drivertype" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/drivertype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Typ wirklich löschen?')">🗑 Löschen</a>
+                <a href="/drivertype" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_drivertype" class="btn save" style="padding: 10px 40px; font-weight: bold; background:#6366f1;">
                 <?= $edit ? 'Aktualisieren' : 'Speichern' ?>
@@ -118,8 +118,8 @@ $list = $stmt->fetchAll();
                 <td style="font-weight: 600; color: #1e293b;"><?= htmlspecialchars($item['name']) ?></td>
                 <td style="color: #64748b; font-size: 13px;"><?= nl2br(htmlspecialchars($item['note'] ?? '')) ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/drivertype&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px;">✎</a>
-                    <a href="/?route=module/drivertype&delete=<?= $item['id'] ?>" class="action-link delete-link" style="font-size: 18px; color:#ef4444; margin-left:10px;" onclick="return confirm('Wirklich löschen?')">🗑</a>
+                    <a href="/drivertype&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px;">✎</a>
+                    <a href="/drivertype&delete=<?= $item['id'] ?>" class="action-link delete-link" style="font-size: 18px; color:#ef4444; margin-left:10px;" onclick="return confirm('Wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

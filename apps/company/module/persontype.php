@@ -38,14 +38,14 @@ if (isset($_POST['save_persontype'])) {
         $sql = "UPDATE persontype SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/persontype&edit=new&msg=updated&name=$nameParam";
+        $redirect = "/persontype&edit=new&msg=updated&name=$nameParam";
     } else {
         // INSERT
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO persontype ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/persontype&edit=new&msg=created&name=$nameParam";
+        $redirect = "/persontype&edit=new&msg=created&name=$nameParam";
     }
 }
 
@@ -58,7 +58,7 @@ if (isset($_GET['delete'])) {
 
     $stmt = $pdo->prepare("DELETE FROM persontype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/persontype&edit=new&msg=deleted&name=$nameParam";
+    $redirect = "/persontype&edit=new&msg=deleted&name=$nameParam";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -122,10 +122,10 @@ $list = $stmtList->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🏷 Personentypen</h3>
-        <a href="/?route=module/persontype&edit=new" class="btn-action neu-bg">+ Neuer Typ</a>
+        <a href="/persontype&edit=new" class="btn-action neu-bg">+ Neuer Typ</a>
     </div>
 
-    <form method="post" action="/?route=module/persontype" class="form-container">
+    <form method="post" action="/persontype" class="form-container">
         <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id'] ?? '') ?>">
         
         <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
@@ -141,9 +141,9 @@ $list = $stmtList->fetchAll();
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <div><?php if(!empty($edit['id'])): ?><a href="/?route=module/persontype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
+            <div><?php if(!empty($edit['id'])): ?><a href="/persontype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
             <div style="display: flex; gap: 10px;">
-                <a href="/?route=module/persontype&edit=new" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/persontype&edit=new" class="btn-action cancel-bg">Abbrechen</a>
                 <?php if(!empty($edit['id'])): ?><button type="submit" name="duplicate_persontype" class="btn-action dupli-bg">📑 Duplizieren</button><?php endif; ?>
                 <button type="submit" name="save_persontype" class="btn-action" style="padding:10px 40px; color:white; font-weight:bold; background:#3b82f6;">
                     <?= (!empty($edit['id'])) ? '💾 Update' : '💾 Speichern' ?>
@@ -159,7 +159,7 @@ $list = $stmtList->fetchAll();
         <input type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Name oder Notiz suchen..." style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         <button type="submit" class="btn-action neu-bg" style="padding: 8px 25px;">🔍 Suchen</button>
         <?php if(!empty($searchTerm)): ?>
-            <a href="/?route=module/persontype&edit=new" class="btn-action cancel-bg">✖ Filter löschen</a>
+            <a href="/persontype&edit=new" class="btn-action cancel-bg">✖ Filter löschen</a>
         <?php endif; ?>
     </form>
 </div>
@@ -180,7 +180,7 @@ $list = $stmtList->fetchAll();
                 <td><small style="color: #94a3b8;">#<?= $p['id'] ?></small></td>
                 <td><strong><?= htmlspecialchars($p['name']) ?></strong></td>
                 <td><small><?= htmlspecialchars($p['note'] ?? '-') ?></small></td>
-                <td style="text-align:right;"><a href="/?route=module/persontype&edit=<?= $p['id'] ?>" class="edit-link">✎</a></td>
+                <td style="text-align:right;"><a href="/persontype&edit=<?= $p['id'] ?>" class="edit-link">✎</a></td>
             </tr>
             <?php endforeach; ?>
             <?php if(empty($list)): ?>

@@ -31,13 +31,13 @@ if (isset($_POST['save_location'])) {
                 updateddate=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/vehiclelocation&msg=updated";
+        $redirect = "/vehiclelocation&msg=updated";
     } else {
         $sql = "INSERT INTO vehiclelocation 
                 (vehicleid, driverid, tripid, datetime, lat, lng, speed, heading, accuracy, note, createddate) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/vehiclelocation&msg=created";
+        $redirect = "/vehiclelocation&msg=created";
     }
 }
 
@@ -69,7 +69,7 @@ $list = $pdo->query("SELECT vl.*, v.licenseplate, p.lastname, p.firstname
 
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #10b981;">
     <h3>📍 Standort-Erfassung (Sekundengenau)</h3>
-    <form method="post" action="/?route=module/vehiclelocation" class="form-container">
+    <form method="post" action="/vehiclelocation" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -141,7 +141,7 @@ $list = $pdo->query("SELECT vl.*, v.licenseplate, p.lastname, p.firstname
                     <?= $vl['speed'] ? " | 💨 ".$vl['speed']." km/h" : "" ?>
                 </td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/vehiclelocation&edit=<?= $vl['id'] ?>" class="action-link">✎</a>
+                    <a href="/vehiclelocation&edit=<?= $vl['id'] ?>" class="action-link">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

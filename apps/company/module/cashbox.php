@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM cashbox WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/cashbox?msg=deleted";
+    $redirect = "/cashbox?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -26,11 +26,11 @@ if (isset($_POST['save_cashbox'])) {
     if (!empty($id)) {
         $sql = "UPDATE cashbox SET cashboxtypeid=?, name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$cashboxtypeid, $name, $note, $id]);
-        $redirect = "/module/cashbox?msg=updated";
+        $redirect = "/cashbox?msg=updated";
     } else {
         $sql = "INSERT INTO cashbox (cashboxtypeid, name, note, createddate) VALUES (?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute([$cashboxtypeid, $name, $note]);
-        $redirect = "/module/cashbox?msg=created";
+        $redirect = "/cashbox?msg=created";
     }
 }
 
@@ -69,7 +69,7 @@ if (isset($_GET['msg'])) {
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? '🪙 Kasse bearbeiten' : '🪙 Neue Kasse anlegen' ?></h3>
     
-    <form method="post" action="/module/cashbox" class="form-container">
+    <form method="post" action="/cashbox" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -97,7 +97,7 @@ if (isset($_GET['msg'])) {
         <div class="form-actions" style="margin-left: 180px; padding-top: 20px;">
             <button type="submit" name="save_cashbox" class="btn save">Speichern</button>
             <?php if($edit): ?>
-                <a href="/module/cashbox" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/cashbox" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -120,8 +120,8 @@ if (isset($_GET['msg'])) {
                 <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
                 <td><span class="badge"><?= htmlspecialchars($c['typename'] ?? '-') ?></span></td>
                 <td style="text-align:right;">
-                    <a href="/module/cashbox?edit=<?= $c['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/cashbox?delete=<?= $c['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
+                    <a href="/cashbox?edit=<?= $c['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/cashbox?delete=<?= $c['id'] ?>" class="action-link delete-link" onclick="return confirm('Wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

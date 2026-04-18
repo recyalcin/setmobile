@@ -2,32 +2,43 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-// index.php
+
 session_start();
-ob_start(); 
+ob_start();
 
 require_once __DIR__ . '/inc/db.php';
 
-// Route ohne .php aus der URL holen
-$route = $_GET['route'] ?? 'module/dashboard';
+// Route al — hem /dashboard hem /module/dashboard destekle
+$route = $_GET['route'] ?? 'dashboard';
 $route = rtrim($route, '/');
+
+// Geriye uyumluluk: module/ prefiksi varsa kaldır
+if (strpos($route, 'module/') === 0) {
+    $route = substr($route, 7);
+}
+// admin/ prefiksi varsa koru (admin sayfaları ayrı klasörde)
+$isAdmin = (strpos($route, 'admin/') === 0);
 
 $isLoggedIn = isset($_SESSION['appuser']);
 
-// GATEKEEPER (Pfade jetzt ohne .php)
-if (!$isLoggedIn && $route !== 'module/login') {
-    header("Location: /module/login");
+// GATEKEEPER
+if (!$isLoggedIn && $route !== 'login') {
+    header("Location: /login");
     exit;
 }
 
-if ($isLoggedIn && $route === 'module/login') {
-    header("Location: /module/dashboard");
+if ($isLoggedIn && $route === 'login') {
+    header("Location: /dashboard");
     exit;
 }
 
-// INTERN: Hier wird das .php für das Dateisystem angehängt
-$baseDir    = __DIR__;
-$targetFile = $baseDir . '/' . $route . '.php';
+// Dosya yolu belirle
+$baseDir = __DIR__;
+if ($isAdmin) {
+    $targetFile = $baseDir . '/' . $route . '.php';
+} else {
+    $targetFile = $baseDir . '/module/' . $route . '.php';
+}
 
 $moduleContent = '';
 if (file_exists($targetFile)) {
@@ -35,7 +46,7 @@ if (file_exists($targetFile)) {
     include $targetFile;
     $moduleContent = ob_get_clean();
 } else {
-    $moduleContent = "<div class='card'><h2>404</h2><p>Seite '$route' nicht gefunden. ($targetFile)</p></div>";
+    $moduleContent = "<div class='card'><h2>404</h2><p>Seite '$route' nicht gefunden.</p></div>";
 }
 
 require_once $baseDir . '/inc/header.php';

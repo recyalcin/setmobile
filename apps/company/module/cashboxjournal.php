@@ -140,7 +140,7 @@ if (!empty($filter_cashbox)) {
 
         <div style="display: flex; gap: 5px; height: 38px;">
             <button type="submit" class="btn save" style="height:38px; padding: 0 15px;">Anzeigen</button>
-            <a href="/?route=module/cashboxjournal" class="btn reset-btn" style="height:38px; display:flex; align-items:center;">Reset</a>
+            <a href="/cashboxjournal" class="btn reset-btn" style="height:38px; display:flex; align-items:center;">Reset</a>
         </div>
     </form>
 </div>
@@ -201,7 +201,7 @@ if (!empty($filter_cashbox)) {
                 <td style="font-size: 13px; color: #666;"><?= date('d.m.Y', strtotime($t['date'])) ?></td>
                 <td>
                     <div style="font-size: 14px;">
-                        <a href="/?route=module/transaction&edit=<?= $t['id'] ?>" 
+                        <a href="/transaction&edit=<?= $t['id'] ?>" 
                            target="_blank" 
                            title="Buchung bearbeiten" 
                            style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 5px;">

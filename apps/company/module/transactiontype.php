@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM transactiontype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/transactiontype?msg=deleted";
+    $redirect = "/transactiontype?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -26,12 +26,12 @@ if (isset($_POST['save_type'])) {
         // UPDATE
         $sql = "UPDATE transactiontype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/module/transactiontype?msg=updated";
+        $redirect = "/transactiontype?msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO transactiontype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/module/transactiontype?msg=created";
+        $redirect = "/transactiontype?msg=created";
     }
 }
 
@@ -64,7 +64,7 @@ $list = $pdo->query("SELECT * FROM transactiontype ORDER BY name ASC")->fetchAll
 
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? '⚙️ Typ bearbeiten' : '⚙️ Neuer Transaktionstyp' ?></h3>
-    <form method="post" action="/module/transactiontype" class="form-container">
+    <form method="post" action="/transactiontype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -80,7 +80,7 @@ $list = $pdo->query("SELECT * FROM transactiontype ORDER BY name ASC")->fetchAll
         <div class="form-actions" style="margin-left: 180px; padding-left: 20px;">
             <button type="submit" name="save_type" class="btn save">Speichern</button>
             <?php if($edit): ?>
-                <a href="/module/transactiontype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/transactiontype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -104,8 +104,8 @@ $list = $pdo->query("SELECT * FROM transactiontype ORDER BY name ASC")->fetchAll
                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                 <td style="font-size: 13px; color: #666;"><?= htmlspecialchars($t['note'] ?? '') ?></td>
                 <td style="text-align:right;">
-                    <a href="/module/transactiontype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/transactiontype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
+                    <a href="/transactiontype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/transactiontype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

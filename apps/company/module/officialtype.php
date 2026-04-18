@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM officialtype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/module/officialtype?msg=deleted";
+    $redirect = "/officialtype?msg=deleted";
 }
 
 // --- 2. LOGIK: SPEICHERN ---
@@ -25,11 +25,11 @@ if (isset($_POST['save_officialtype'])) {
     if (!empty($id)) {
         $sql = "UPDATE officialtype SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/module/officialtype?msg=updated";
+        $redirect = "/officialtype?msg=updated";
     } else {
         $sql = "INSERT INTO officialtype (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/module/officialtype?msg=created";
+        $redirect = "/officialtype?msg=created";
     }
 }
 
@@ -63,7 +63,7 @@ $list = $pdo->query("SELECT * FROM officialtype ORDER BY id ASC")->fetchAll();
 <div class="card" style="margin-bottom: 30px;">
     <h3><?= $edit ? '📊 Buchungs-Art bearbeiten' : '📊 Neue Buchungs-Art definieren' ?></h3>
     
-    <form method="post" action="/module/officialtype" class="form-container">
+    <form method="post" action="/officialtype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -79,7 +79,7 @@ $list = $pdo->query("SELECT * FROM officialtype ORDER BY id ASC")->fetchAll();
         <div class="form-actions" style="margin-left: 180px; padding-top: 20px;">
             <button type="submit" name="save_officialtype" class="btn save">Speichern</button>
             <?php if($edit): ?>
-                <a href="/module/officialtype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
+                <a href="/officialtype" class="btn" style="background:#eee; color:#333; text-decoration:none; margin-left:10px;">Abbrechen</a>
             <?php endif; ?>
         </div>
     </form>
@@ -102,8 +102,8 @@ $list = $pdo->query("SELECT * FROM officialtype ORDER BY id ASC")->fetchAll();
                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                 <td style="font-size: 13px; color: #666;"><?= htmlspecialchars($t['note'] ?? '-') ?></td>
                 <td style="text-align:right;">
-                    <a href="/module/officialtype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
-                    <a href="/module/officialtype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
+                    <a href="/officialtype?edit=<?= $t['id'] ?>" class="action-link edit-link">✎</a>
+                    <a href="/officialtype?delete=<?= $t['id'] ?>" class="action-link delete-link" onclick="return confirm('Möchten Sie diesen Typ wirklich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

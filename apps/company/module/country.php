@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM country WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/country&msg=deleted";
+    $redirect = "/country&msg=deleted";
 }
 
 if (isset($_POST['save_country'])) {
@@ -29,13 +29,13 @@ if (isset($_POST['save_country'])) {
                 name=?, code=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/country&msg=updated";
+        $redirect = "/country&msg=updated";
     } else {
         $sql = "INSERT INTO country 
                 (name, code, note, createdat) 
                 VALUES (?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/country&msg=created";
+        $redirect = "/country&msg=created";
     }
 }
 
@@ -86,7 +86,7 @@ $list = $listStmt->fetchAll();
             <input type="text" name="q" value="<?= htmlspecialchars($f_q) ?>" class="filter-input" placeholder="Suchen..." style="width: 100%; box-sizing: border-box; margin: 0;">
         </div>
         <button type="submit" class="btn save" style="height: 38px; padding: 0 20px;">Suchen</button>
-        <a href="/?route=module/country" class="btn reset-btn" style="height: 38px; display: inline-flex; align-items: center; background: #cbd5e1; color: #333; text-decoration: none; padding: 0 15px; border-radius: 4px; font-size: 14px; font-weight: 600;">Reset</a>
+        <a href="/country" class="btn reset-btn" style="height: 38px; display: inline-flex; align-items: center; background: #cbd5e1; color: #333; text-decoration: none; padding: 0 15px; border-radius: 4px; font-size: 14px; font-weight: 600;">Reset</a>
     </form>
 </div>
 
@@ -94,7 +94,7 @@ $list = $listStmt->fetchAll();
 $renderForm = function() use ($edit) { ?>
     <div class="card" style="margin-bottom: 25px; border-left: 5px solid #10b981;">
         <h3 style="margin-bottom: 15px;">🌍 <?= $edit ? 'Land bearbeiten' : 'Neues Land anlegen' ?></h3>
-        <form method="post" action="/?route=module/country" class="form-container">
+        <form method="post" action="/country" class="form-container">
             <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
             
             <div class="form-row">
@@ -114,8 +114,8 @@ $renderForm = function() use ($edit) { ?>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/country&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Land wirklich löschen?')">🗑 Löschen</a>
-                    <a href="/?route=module/country" class="btn-action cancel-bg">Abbrechen</a>
+                    <a href="/country&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Land wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/country" class="btn-action cancel-bg">Abbrechen</a>
                 <?php endif; ?>
                 <button type="submit" name="save_country" class="btn save" style="padding: 10px 40px; font-weight: bold;">Speichern</button>
             </div>
@@ -141,7 +141,7 @@ $renderList = function() use ($list, $totalPages, $page, $f_q) { ?>
                     <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
                     <td style="font-size:12px; color:#64748b;"><?= htmlspecialchars($c['note'] ?: '-') ?></td>
                     <td style="text-align:right;">
-                        <a href="/?route=module/country&edit=<?= $c['id'] ?>" class="action-link edit-link" style="font-size: 18px; text-decoration: none;">✎</a>
+                        <a href="/country&edit=<?= $c['id'] ?>" class="action-link edit-link" style="font-size: 18px; text-decoration: none;">✎</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -149,7 +149,7 @@ $renderList = function() use ($list, $totalPages, $page, $f_q) { ?>
         </table>
         <?php if ($totalPages > 1): ?>
         <div class="pagination" style="margin-top: 25px; display: flex; justify-content: center; gap: 8px;">
-            <?php $pUrl = "/?route=module/country&q=".urlencode($f_q)."&p="; ?>
+            <?php $pUrl = "/country&q=".urlencode($f_q)."&p="; ?>
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                 <a href="<?= $pUrl . $i ?>" class="page-link <?= ($i == $page) ? 'active' : '' ?>"><?= $i ?></a>
             <?php endfor; ?>

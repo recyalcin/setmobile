@@ -37,14 +37,14 @@ if (isset($_POST['save_schicht'])) {
         $sql = "UPDATE workinghoursschicht SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/workinghoursschicht&edit=new&msg=updated&name=$nameParam";
+        $redirect = "/workinghoursschicht&edit=new&msg=updated&name=$nameParam";
     } else {
         // INSERT
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO workinghoursschicht ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/workinghoursschicht&edit=new&msg=created&name=$nameParam";
+        $redirect = "/workinghoursschicht&edit=new&msg=created&name=$nameParam";
     }
 }
 
@@ -58,7 +58,7 @@ if (isset($_GET['delete'])) {
 
     $stmt = $pdo->prepare("DELETE FROM workinghoursschicht WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/workinghoursschicht&edit=new&msg=deleted&name=$nameParam";
+    $redirect = "/workinghoursschicht&edit=new&msg=deleted&name=$nameParam";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -123,10 +123,10 @@ $list = $stmtList->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🕒 Schicht-Verwaltung</h3>
-        <a href="/?route=module/workinghoursschicht&edit=new" class="btn-action neu-bg">+ Neue Schicht</a>
+        <a href="/workinghoursschicht&edit=new" class="btn-action neu-bg">+ Neue Schicht</a>
     </div>
 
-    <form method="post" action="/?route=module/workinghoursschicht" class="form-container">
+    <form method="post" action="/workinghoursschicht" class="form-container">
         <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id'] ?? '') ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
@@ -143,9 +143,9 @@ $list = $stmtList->fetchAll();
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <div><?php if(!empty($edit['id'])): ?><a href="/?route=module/workinghoursschicht&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
+            <div><?php if(!empty($edit['id'])): ?><a href="/workinghoursschicht&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
             <div style="display: flex; gap: 10px;">
-                <a href="/?route=module/workinghoursschicht&edit=new" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/workinghoursschicht&edit=new" class="btn-action cancel-bg">Abbrechen</a>
                 <?php if(!empty($edit['id'])): ?><button type="submit" name="duplicate_schicht" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button><?php endif; ?>
                 <button type="submit" name="save_schicht" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#3b82f6;"><?= (!empty($edit['id'])) ? '💾 Update' : '💾 Speichern' ?></button>
             </div>
@@ -177,7 +177,7 @@ $list = $stmtList->fetchAll();
                 <td><small>#<?= $s['id'] ?></small></td>
                 <td><strong><?= htmlspecialchars($s['name']) ?></strong></td>
                 <td><small><?= htmlspecialchars($s['note'] ?? '-') ?></small></td>
-                <td style="text-align:right;"><a href="/?route=module/workinghoursschicht&edit=<?= $s['id'] ?>" class="edit-link">✎</a></td>
+                <td style="text-align:right;"><a href="/workinghoursschicht&edit=<?= $s['id'] ?>" class="edit-link">✎</a></td>
             </tr>
             <?php endforeach; ?>
         </tbody>

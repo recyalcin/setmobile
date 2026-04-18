@@ -21,7 +21,7 @@ if (!isset($_SESSION['userid']) && isset($_COOKIE['rememberme'])) {
         if ($user) {
             $_SESSION['appuser']   = $user['username'];
             $_SESSION['userid'] = $user['id'];
-            header("Location: /module/dashboard");
+            header("Location: /dashboard");
             exit;
         }
     } catch (Exception $e) {
@@ -59,7 +59,7 @@ if (isset($_POST['dologin'])) {
         }
         
         // Weiterleitung
-        header("Location: /module/dashboard");
+        header("Location: /dashboard");
         exit;
     } else {
         $error = 'Die Zugangsdaten sind nicht korrekt.';
@@ -82,7 +82,7 @@ if (isset($_POST['dologin'])) {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="/module/login">
+        <form method="post" action="/login">
             
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-weight:600; margin-bottom:8px; font-size:14px; color:#555;">Benutzername</label>

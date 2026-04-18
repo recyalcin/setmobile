@@ -13,7 +13,7 @@ $redirect = false;
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM licensecategory WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/licensecategory&msg=deleted";
+    $redirect = "/licensecategory&msg=deleted";
 }
 
 if (isset($_POST['save_licensecategory'])) {
@@ -25,12 +25,12 @@ if (isset($_POST['save_licensecategory'])) {
         // UPDATE
         $sql = "UPDATE licensecategory SET name=?, note=?, updateddate=NOW() WHERE id=?";
         $pdo->prepare($sql)->execute([$name, $note, $id]);
-        $redirect = "/?route=module/licensecategory&msg=updated";
+        $redirect = "/licensecategory&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO licensecategory (name, note, createddate) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute([$name, $note]);
-        $redirect = "/?route=module/licensecategory&msg=created";
+        $redirect = "/licensecategory&msg=created";
     }
 }
 
@@ -66,7 +66,7 @@ $list = $stmt->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #f59e0b;">
     <h3 style="margin-top:0;">📜 <?= $edit ? 'Klasse bearbeiten' : 'Neue Führerscheinklasse' ?></h3>
     
-    <form method="post" action="/?route=module/licensecategory" class="form-container">
+    <form method="post" action="/licensecategory" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div class="form-row">
@@ -81,8 +81,8 @@ $list = $stmt->fetchAll();
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <?php if($edit): ?>
-                <a href="/?route=module/licensecategory&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Klasse wirklich löschen?')">🗑 Löschen</a>
-                <a href="/?route=module/licensecategory" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/licensecategory&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Klasse wirklich löschen?')">🗑 Löschen</a>
+                <a href="/licensecategory" class="btn-action cancel-bg">Abbrechen</a>
             <?php endif; ?>
             <button type="submit" name="save_licensecategory" class="btn save" style="padding: 10px 40px; font-weight: bold; background:#f59e0b;">
                 <?= $edit ? 'Aktualisieren' : 'Speichern' ?>
@@ -118,8 +118,8 @@ $list = $stmt->fetchAll();
                 <td><strong style="color: #1e293b; font-size: 15px;"><?= htmlspecialchars($item['name']) ?></strong></td>
                 <td style="color: #64748b; font-size: 13px;"><?= nl2br(htmlspecialchars($item['note'] ?? '')) ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/licensecategory&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px;">✎</a>
-                    <a href="/?route=module/licensecategory&delete=<?= $item['id'] ?>" class="action-link delete-link" style="font-size: 18px; color:#ef4444; margin-left:10px;" onclick="return confirm('Klasse unwiderruflich löschen?')">🗑</a>
+                    <a href="/licensecategory&edit=<?= $item['id'] ?>" class="action-link edit-link" style="font-size: 18px;">✎</a>
+                    <a href="/licensecategory&delete=<?= $item['id'] ?>" class="action-link delete-link" style="font-size: 18px; color:#ef4444; margin-left:10px;" onclick="return confirm('Klasse unwiderruflich löschen?')">🗑</a>
                 </td>
             </tr>
             <?php endforeach; ?>

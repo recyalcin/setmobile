@@ -25,19 +25,19 @@ if (isset($_POST['save_type']) || isset($_POST['duplicate_type'])) {
         $sql = "UPDATE tickettype SET name=?, note=?, updatedat=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/tickettype&msg=updated";
+        $redirect = "/tickettype&msg=updated";
     } else {
         // INSERT
         $sql = "INSERT INTO tickettype (name, note, createdat) VALUES (?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/tickettype&msg=created";
+        $redirect = "/tickettype&msg=created";
     }
 }
 
 if (isset($_GET['delete'])) {
     $stmt = $pdo->prepare("DELETE FROM tickettype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/tickettype&msg=deleted";
+    $redirect = "/tickettype&msg=deleted";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -57,10 +57,10 @@ $list = $pdo->query("SELECT * FROM tickettype ORDER BY name ASC")->fetchAll();
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #8b5cf6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🏷️ Ticket-Typen verwalten</h3>
-        <a href="/?route=module/tickettype&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neuer Typ</a>
+        <a href="/tickettype&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neuer Typ</a>
     </div>
 
-    <form method="post" action="/?route=module/tickettype" class="form-container">
+    <form method="post" action="/tickettype" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -81,12 +81,12 @@ $list = $pdo->query("SELECT * FROM tickettype ORDER BY name ASC")->fetchAll();
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/tickettype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Typ wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/tickettype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Diesen Typ wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/tickettype" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/tickettype" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_type" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_type" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold; background:#8b5cf6;">
@@ -114,7 +114,7 @@ $list = $pdo->query("SELECT * FROM tickettype ORDER BY name ASC")->fetchAll();
                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
                 <td><small style="color:#64748b;"><?= htmlspecialchars($t['note'] ?? '-') ?></small></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/tickettype&edit=<?= $t['id'] ?>" class="edit-link" style="color:#8b5cf6;">✎</a>
+                    <a href="/tickettype&edit=<?= $t['id'] ?>" class="edit-link" style="color:#8b5cf6;">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

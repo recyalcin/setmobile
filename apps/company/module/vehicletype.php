@@ -36,13 +36,13 @@ if (isset($_POST['save_vehicletype'])) {
         $sql = "UPDATE vehicletype SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/vehicletype&msg=updated&name=$nameParam";
+        $redirect = "/vehicletype&msg=updated&name=$nameParam";
     } else {
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO vehicletype ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/vehicletype&msg=created&name=$nameParam";
+        $redirect = "/vehicletype&msg=created&name=$nameParam";
     }
 }
 
@@ -55,7 +55,7 @@ if (isset($_GET['delete'])) {
 
     $stmt = $pdo->prepare("DELETE FROM vehicletype WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    $redirect = "/?route=module/vehicletype&msg=deleted&name=$nameParam";
+    $redirect = "/vehicletype&msg=deleted&name=$nameParam";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
@@ -122,7 +122,7 @@ $list = $stmtList->fetchAll();
         <input type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Fahrzeugtyp suchen..." style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         <button type="submit" class="btn-action neu-bg" style="padding: 8px 25px;">🔍 Suchen</button>
         <?php if(!empty($searchTerm)): ?>
-            <a href="/?route=module/vehicletype" class="btn-action cancel-bg">✖ Filter löschen</a>
+            <a href="/vehicletype" class="btn-action cancel-bg">✖ Filter löschen</a>
         <?php endif; ?>
     </form>
 </div>
@@ -135,11 +135,11 @@ ob_start(); ?>
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; <?= $showForm ? 'margin-bottom: 15px;' : '' ?>">
         <h3 style="margin:0;">🚗 Fahrzeugtypen</h3>
-        <a href="/?route=module/vehicletype&edit=new" class="btn-action neu-bg">+ Neuer Typ</a>
+        <a href="/vehicletype&edit=new" class="btn-action neu-bg">+ Neuer Typ</a>
     </div>
 
     <?php if ($showForm): ?>
-    <form method="post" action="/?route=module/vehicletype" class="form-container">
+    <form method="post" action="/vehicletype" class="form-container">
         <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id'] ?? '') ?>">
         
         <div style="display: grid; grid-template-columns: 1fr; gap: 40px;">
@@ -155,9 +155,9 @@ ob_start(); ?>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <div><?php if(!empty($edit['id'])): ?><a href="/?route=module/vehicletype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
+            <div><?php if(!empty($edit['id'])): ?><a href="/vehicletype&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
             <div style="display: flex; gap: 10px;">
-                <a href="/?route=module/vehicletype" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/vehicletype" class="btn-action cancel-bg">Abbrechen</a>
                 <?php if(!empty($edit['id'])): ?><button type="submit" name="duplicate_vehicletype" class="btn-action dupli-bg">📑 Duplizieren</button><?php endif; ?>
                 <button type="submit" name="save_vehicletype" class="btn-action" style="padding:10px 40px; color:white; font-weight:bold; background:#3b82f6;">
                     <?= (!empty($edit['id'])) ? '💾 Update' : '💾 Speichern' ?>
@@ -188,7 +188,7 @@ ob_start(); ?>
                 <td><small style="color: #94a3b8;">#<?= $v['id'] ?></small></td>
                 <td><strong><?= htmlspecialchars($v['name']) ?></strong></td>
                 <td><small><?= htmlspecialchars($v['note'] ?? '-') ?></small></td>
-                <td style="text-align:right;"><a href="/?route=module/vehicletype&edit=<?= $v['id'] ?>" class="edit-link">✎</a></td>
+                <td style="text-align:right;"><a href="/vehicletype&edit=<?= $v['id'] ?>" class="edit-link">✎</a></td>
             </tr>
             <?php endforeach; ?>
             <?php if(empty($list)): ?>

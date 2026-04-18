@@ -36,14 +36,14 @@ if (isset($_POST['save_activity']) || isset($_POST['duplicate_activity'])) {
                 updateddate=NOW() WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/driveractivity&msg=updated";
+        $redirect = "/driveractivity&msg=updated";
     } else {
         $sql = "INSERT INTO driveractivity 
                 (driveractivitytypeid, driverid, vehicleid, tripid, 
                  datetime, lat, lng, odometer, note, createddate) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $pdo->prepare($sql)->execute($params);
-        $redirect = "/?route=module/driveractivity&msg=created";
+        $redirect = "/driveractivity&msg=created";
     }
 }
 
@@ -73,10 +73,10 @@ $list = $pdo->query("SELECT da.*, p.lastname, p.firstname, dat.name as type_name
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3 style="margin:0;">🚩 Fahrer-Aktivität (Sekundengenau)</h3>
-        <a href="/?route=module/driveractivity&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neu</a>
+        <a href="/driveractivity&edit=new" class="btn-action neu-bg" style="text-decoration:none;">+ Neu</a>
     </div>
 
-    <form method="post" action="/?route=module/driveractivity" class="form-container">
+    <form method="post" action="/driveractivity" class="form-container">
         <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -127,12 +127,12 @@ $list = $pdo->query("SELECT da.*, p.lastname, p.firstname, dat.name as type_name
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
             <div>
                 <?php if($edit): ?>
-                    <a href="/?route=module/driveractivity&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Eintrag wirklich löschen?')">🗑 Löschen</a>
+                    <a href="/driveractivity&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Eintrag wirklich löschen?')">🗑 Löschen</a>
                 <?php endif; ?>
             </div>
             <div style="display: flex; gap: 10px;">
                 <?php if($edit): ?>
-                    <a href="/?route=module/driveractivity" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
+                    <a href="/driveractivity" class="btn-action cancel-bg" style="text-decoration:none;">Abbrechen</a>
                     <button type="submit" name="duplicate_activity" class="btn dupli-bg" style="cursor:pointer; border:none; padding:10px 20px; border-radius:4px;">📑 Duplizieren</button>
                 <?php endif; ?>
                 <button type="submit" name="save_activity" class="btn save-bg" style="cursor:pointer; border:none; padding:10px 40px; border-radius:4px; color:white; font-weight:bold;">
@@ -167,7 +167,7 @@ $list = $pdo->query("SELECT da.*, p.lastname, p.firstname, dat.name as type_name
                 <td style="font-size:12px;"><?= htmlspecialchars($da['licenseplate'] ?: '-') ?></td>
                 <td><?= $da['odometer'] ? number_format($da['odometer'], 0, ',', '.') . ' km' : '-' ?></td>
                 <td style="text-align:right;">
-                    <a href="/?route=module/driveractivity&edit=<?= $da['id'] ?>" class="edit-link">✎</a>
+                    <a href="/driveractivity&edit=<?= $da['id'] ?>" class="edit-link">✎</a>
                 </td>
             </tr>
             <?php endforeach; ?>

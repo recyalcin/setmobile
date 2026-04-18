@@ -7,7 +7,7 @@ require_once __DIR__ . '/menu.php';
 <head>
     <meta charset="UTF-8">
     <title>SM1 System</title>
-    <base href="http://localhost:8080/">
+    <base href="/">
     <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
 </head>
 <body class="<?= isset($_SESSION['appuser']) ? 'logged-in' : 'logged-out' ?>">

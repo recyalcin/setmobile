@@ -39,7 +39,7 @@ try {
     }
 
     echo "<p>Check abgeschlossen. Die Tabelle 'officialtype' ist bereit.</p>";
-    echo "<br><a href='/module/officialtype' class='btn save'>Zum Modul</a>";
+    echo "<br><a href='/officialtype' class='btn save'>Zum Modul</a>";
 
 } catch (PDOException $e) {
     echo "<p style='color:red;'>Fehler: " . htmlspecialchars($e->getMessage()) . "</p>";
