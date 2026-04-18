@@ -1,0 +1,16 @@
+{
+  "assets": {
+    "source": "./deploy/android/assets",
+    "android": {
+      "icon": {
+        "source": "icon.png",
+        "foregroundSource": "icon-foreground.png",
+        "backgroundColor": "#1a1a2e"
+      },
+      "splash": {
+        "source": "splash.png",
+        "backgroundColor": "#1a1a2e"
+      }
+    }
+  }
+}

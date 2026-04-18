@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Capacitor } from '@capacitor/core';
 import AdminPanel from './components/AdminPanel';
 
 // --- Types ---
@@ -57,7 +58,10 @@ type View = 'driving' | 'history' | 'profile' | 'admin';
 
 // --- API Helpers ---
 
-const API_BASE = '/api';
+// Native APK uses absolute URL; web (dev + production nginx proxy) uses relative path
+const API_BASE = Capacitor.isNativePlatform()
+  ? 'https://driver.setmobile.eu/api'
+  : '/api';
 
 async function apiFetch(path: string, options: any = {}) {
   const token = localStorage.getItem('token');
