@@ -7,4 +7,5 @@ coverage/
 .env*
 !.env.example
 sm1_full_tables.json
+sm1_export-260414-2049.sql
 *.tmp
