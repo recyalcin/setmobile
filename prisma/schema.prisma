@@ -3,197 +3,674 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// --- Core Entities ---
+// ── Lookup Tables ──────────────────────────────────────────────────────────
+
+model PersonType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("persontype")
+}
+
+model DriverType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("drivertype")
+}
+
+model EmployeeType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("employeetype")
+}
+
+model VehicleType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("vehicletype")
+}
+
+model TripType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("triptype")
+}
+
+model TripStatus {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("tripstatus")
+}
+
+model TripSource {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("tripsource")
+}
+
+model PaymentType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("paymenttype")
+}
+
+model TicketCategory {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("ticketcategory")
+}
+
+model TicketStatus {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("ticketstatus")
+}
+
+model TicketType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("tickettype")
+}
+
+model TicketPriority {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("ticketpriority")
+}
+
+model JobTitle {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("jobtitle")
+}
+
+model LicenseCategory {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("licensecategory")
+}
+
+model CompanyLegalForm {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("companylegalform")
+}
+
+model CompanyType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("companytype")
+}
+
+model Country {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  code      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("country")
+}
+
+model Currency {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  code      String?
+  symbol    String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("currency")
+}
+
+model OfficialType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("officialtype")
+}
+
+model TransactionType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("transactiontype")
+}
+
+model TransactionEntityType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  tablename String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("transactionentitytype")
+}
+
+model BankAccountType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("bankaccounttype")
+}
+
+model Bank {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("bank")
+}
+
+model Make {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("make")
+}
+
+model VehicleModel {
+  id        Int       @id @default(autoincrement())
+  makeid    Int?
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("model")
+}
+
+model Color {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  hex       String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("color")
+}
+
+model Department {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("department")
+}
+
+model CashType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("cashtype")
+}
+
+model DriverActivityType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("driveractivitytype")
+}
+
+model VehicleServiceType {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("vehicleservicetype")
+}
+
+model VehicleServiceTask {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("vehicleservicetask")
+}
+
+model CashBoxType {
+  id          Int       @id @default(autoincrement())
+  name        String?
+  note        String?
+  createddate DateTime?
+  updateddate DateTime?
+
+  @@map("cashboxtype")
+}
+
+model Menu {
+  id        Int       @id @default(autoincrement())
+  parentid  Int?
+  name      String?
+  url       String?
+  sortorder Int?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("menu")
+}
+
+model WorkingHoursSchicht {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+
+  @@map("workinghoursschicht")
+}
+
+// ── Master/Detail Tables ──────────────────────────────────────────────────
+
+model BankAccount {
+  id                Int       @id @default(autoincrement())
+  bankaccounttypeid Int?
+  name              String?
+  bankname          String?
+  iban              String?
+  bic               String?
+  personid          Int?
+  currencyid        Int?
+  isactive          Boolean?
+  note              String?
+  createdat         DateTime?
+  updatedat         DateTime?
+
+  @@map("bankaccount")
+}
+
+model DriverActivity {
+  id                    Int       @id @default(autoincrement())
+  driveractivitytypeid  Int?
+  driverid              Int?
+  vehicleid             Int?
+  tripid                Int?
+  datetime              DateTime?
+  lat                   Decimal?
+  lng                   Decimal?
+  odometer              Decimal?
+  note                  String?
+  createddate           DateTime?
+  updateddate           DateTime?
+
+  @@map("driveractivity")
+}
+
+model VehicleService {
+  id                     Int       @id @default(autoincrement())
+  vehicleservicetypeid   Int?
+  vehicleid              Int?
+  companyid              Int?
+  vehicleservicetaskid   Int?
+  datetime               DateTime?
+  description            String?
+  odometer               Decimal?
+  totalamount            Decimal?
+  invoicenumber          String?
+  nextserviceat          DateTime?
+  nextserviceodometer    Decimal?
+  note                   String?
+  createdat              DateTime?
+  updatedat              DateTime?
+
+  @@map("vehicleservice")
+}
+
+model Transaction {
+  id                   Int       @id @default(autoincrement())
+  transactiontypeid    Int?
+  date                 DateTime?
+  fromtypeid           Int?
+  fromid               Int?
+  totypeid             Int?
+  toid                 Int?
+  amount               Decimal?
+  description          String?
+  vehicleid            Int?
+  personid             Int?
+  note                 String?
+  createddate          DateTime?
+  updateddate          DateTime?
+  officialtypeid       Int?
+
+  @@map("transaction")
+}
+
+model CashBox {
+  id           Int       @id @default(autoincrement())
+  cashboxtypeid Int?
+  name         String?
+  note         String?
+  createddate  DateTime?
+  updateddate  DateTime?
+
+  @@map("cashbox")
+}
+
+model Company {
+  id                   Int       @id @default(autoincrement())
+  companytypeid        Int?
+  companylegalformid   Int?
+  name                 String?
+  street               String?
+  housenr              String?
+  pobox                String?
+  city                 String?
+  countryid            Int?
+  phone                String?
+  email                String?
+  website              String?
+  vatid                String?
+  taxid                String?
+  bankname             String?
+  iban                 String?
+  bic                  String?
+  note                 String?
+  createdat            DateTime?
+  updatedat            DateTime?
+
+  @@map("company")
+}
+
+// ── Main Tables ────────────────────────────────────────────────────────────
 
 model Person {
-  id           Int       @id @default(autoincrement())
-  persontypeid Int?      @default(0)
-  firstname    String?
-  middlename   String?
-  lastname     String?
-  email        String?
-  phone        String?
-  street       String?
-  housenr      String?
-  pobox        String?
-  city         String?
-  country      String?
-  taxid        String?
-  bankname     String?
-  iban         String?
-  bic          String?
-  dateofbirth  DateTime?
-  birthcity    String?
-  birthcountry String?
-  nationality  String?
-  gender       String?
-  note         String?
-  createdat    DateTime  @default(now())
-  updatedat    DateTime  @updatedAt
+  id            Int        @id @default(autoincrement())
+  persontypeid  Int?       @default(2)
+  firstname     String?
+  middlename    String?
+  lastname      String?
+  email         String?
+  phone         String?
+  street        String?
+  housenr       String?
+  pobox         String?
+  city          String?
+  country       String?
+  taxid         String?
+  bankname      String?
+  iban          String?
+  bic           String?
+  dateofbirth   DateTime?
+  birthcity     String?
+  birthcountry  String?
+  nationality   String?
+  gender        String?
+  note          String?
+  createdat     DateTime   @default(now())
+  updatedat     DateTime?
+  users         User[]
+  drivers       Driver[]
+  employees     Employee[]
 
-  users     User[]
-  drivers   Driver[]
-  employees Employee[]
+  @@map("person")
 }
 
 model User {
   id            Int      @id @default(autoincrement())
-  personid      Int?
-  person        Person?  @relation(fields: [personid], references: [id])
   username      String   @unique
   password      String
+  personid      Int?
   active        Boolean  @default(true)
+  role          String?  @default("driver")
   remembertoken String?
-  note          String?
   createdat     DateTime @default(now())
-  updatedat     DateTime @updatedAt
+  person        Person?  @relation(fields: [personid], references: [id])
+
+  @@map("appuser")
 }
 
 model Driver {
-  id                     Int       @id @default(autoincrement())
-  drivertypeid           Int?
-  personid               Int?
-  person                 Person?   @relation(fields: [personid], references: [id])
-  licensecategoryid      Int?
-  licenseissuedate       DateTime?
-  licenseexpirydate      DateTime?
-  pendorsementissuedate  DateTime?
-  pendorsementexpirydate DateTime?
-  note                   String?
-  createdat              DateTime  @default(now())
-  updatedat              DateTime  @updatedAt
+  id                       Int                 @id @default(autoincrement())
+  drivertypeid             Int?
+  personid                 Int?
+  licensecategoryid        Int?
+  licenseissuedate         DateTime?
+  licenseexpirydate        DateTime?
+  pendorsementissuedate    DateTime?
+  pendorsementexpirydate   DateTime?
+  note                     String?
+  active                   Boolean             @default(true)
+  createdat                DateTime?
+  updatedat                DateTime?
+  person                   Person?             @relation(fields: [personid], references: [id])
+  assignments              VehicleAssignment[]
+  locations                VehicleLocation[]
+  trips                    Trip[]
+  performances             Performance[]
 
-  activities       DriverActivity[]
-  vehiclelocations VehicleLocation[]
-  trips            Trip[]
-  assignments      VehicleAssignment[]
+  @@map("driver")
 }
 
 model Employee {
-  id                    Int       @id @default(autoincrement())
-  personid              Int
-  person                Person    @relation(fields: [personid], references: [id])
-  employeetypeid        Int?      @default(0)
-  employeenumber        String?
-  jobtitleid            Int?      @default(0)
-  departmentid          Int?      @default(0)
-  businessemail         String?
-  businessphone         String?
-  hiredate              DateTime?
-  terminationdate       DateTime?
-  note                  String?
-  createdat             DateTime  @default(now())
-  updatedat             DateTime  @updatedAt
-  maxmonthlyhours       Decimal?
-  maxweeklyhours        Decimal?
-  workinghoursschichtid Int?
+  id                     Int            @id @default(autoincrement())
+  personid               Int?
+  employeetypeid         Int?
+  employeenumber         String?
+  jobtitleid             Int?
+  departmentid           Int?
+  businessemail          String?
+  businessphone          String?
+  hiredate               DateTime?
+  terminationdate        DateTime?
+  note                   String?
+  maxmonthlyhours        Int?
+  maxweeklyhours         Int?
+  workinghoursschichtid  Int?
+  active                 Boolean        @default(true)
+  createdat              DateTime?
+  updatedat              DateTime?
+  person                 Person?        @relation(fields: [personid], references: [id])
+  workingHours           WorkingHours[]
 
-  workinghours WorkingHours[]
+  @@map("employee")
 }
 
-// --- Fleet & Tracking ---
-
 model Vehicle {
-  id            Int      @id @default(autoincrement())
-  vehicletypeid Int?
+  id            Int                 @id @default(autoincrement())
+  licenseplate  String?
   makeid        Int?
   modelid       Int?
   colorid       Int?
-  licenseplate  String?
+  vehicletypeid Int?
+  active        Boolean             @default(true)
   note          String?
-  createdat     DateTime @default(now())
-  updatedat     DateTime @updatedAt
+  createdat     DateTime?
+  updatedat     DateTime?
+  assignments   VehicleAssignment[]
+  workingHours  WorkingHours[]
+  locations     VehicleLocation[]
+  trips         Trip[]
 
-  activities       DriverActivity[]
-  vehiclelocations VehicleLocation[]
-  trips            Trip[]
-  services         VehicleService[]
-  assignments      VehicleAssignment[]
-  WorkingHours     WorkingHours[]
+  @@map("vehicle")
 }
 
 model VehicleAssignment {
   id           Int       @id @default(autoincrement())
-  vehicleid    Int
-  vehicle      Vehicle   @relation(fields: [vehicleid], references: [id])
-  driverid     Int
-  driver       Driver    @relation(fields: [driverid], references: [id])
+  driverid     Int?
+  vehicleid    Int?
   assignedat   DateTime  @default(now())
   unassignedat DateTime?
-  note         String?
-  createdat    DateTime  @default(now())
-  updatedat    DateTime  @updatedAt
-}
+  driver       Driver?   @relation(fields: [driverid], references: [id])
+  vehicle      Vehicle?  @relation(fields: [vehicleid], references: [id])
 
-model VehicleLocation {
-  id          Int       @id @default(autoincrement())
-  vehicleid   Int?
-  vehicle     Vehicle?  @relation(fields: [vehicleid], references: [id])
-  driverid    Int?
-  driver      Driver?   @relation(fields: [driverid], references: [id])
-  tripid      Int?
-  datetime    DateTime?
-  lat         Decimal?
-  lng         Decimal?
-  speed       Decimal?
-  heading     Int?
-  accuracy    Decimal?
-  note        String?
-  createddate DateTime  @default(now())
-  updateddate DateTime  @updatedAt
+  @@map("vehicleassignment")
 }
 
 model WorkingHours {
   id            Int       @id @default(autoincrement())
   employeeid    Int?
-  employee      Employee? @relation(fields: [employeeid], references: [id])
   vehicleid     Int?
-  vehicle       Vehicle?  @relation(fields: [vehicleid], references: [id])
   date          DateTime?
   firsttripat   DateTime?
   lasttripat    DateTime?
   workstartat   DateTime?
   workendat     DateTime?
   breakduration String?
-  hours0004     Decimal?
-  hours2006     Decimal?
   hourstotal    Decimal?
+  startkm       Decimal?
+  endkm         Decimal?
   recordedat    DateTime?
   note          String?
-  createdat     DateTime  @default(now())
-  updatedat     DateTime  @updatedAt
+  createdat     DateTime?
+  updatedat     DateTime?
+  employee      Employee? @relation(fields: [employeeid], references: [id])
+  vehicle       Vehicle?  @relation(fields: [vehicleid], references: [id])
+
+  @@unique([employeeid, date])
+  @@map("workinghours")
 }
 
-model DriverActivity {
-  id                   Int       @id @default(autoincrement())
-  driveractivitytypeid Int?
-  driverid             Int?
-  driver               Driver?   @relation(fields: [driverid], references: [id])
-  vehicleid            Int?
-  vehicle              Vehicle?  @relation(fields: [vehicleid], references: [id])
-  tripid               Int?
-  datetime             DateTime?
-  lat                  Decimal?
-  lng                  Decimal?
-  odometer             Int?
-  note                 String?
-  createddate          DateTime  @default(now())
-  updateddate          DateTime  @updatedAt
+model VehicleLocation {
+  id        Int      @id @default(autoincrement())
+  vehicleid Int?
+  driverid  Int?
+  tripid    Int?
+  datetime  DateTime @default(now())
+  lat       Decimal
+  lng       Decimal
+  speed     Decimal  @default(0)
+  heading   Int?     @default(0)
+  accuracy  Decimal?
+  note      String?
+  createddate DateTime?
+  updateddate DateTime?
+  driver    Driver?  @relation(fields: [driverid], references: [id])
+  vehicle   Vehicle? @relation(fields: [vehicleid], references: [id])
+
+  @@map("vehiclelocation")
+}
+
+model Ticket {
+  id               Int       @id @default(autoincrement())
+  tickettypeid     Int?
+  ticketcategoryid Int?
+  createdbyid      Int?
+  requesterid      Int?
+  assignedtoid     Int?
+  priorityid       Int?      @default(1)
+  ticketstatusid   Int?      @default(1)
+  sortorder        Int?
+  subject          String?
+  description      String?
+  dueat            DateTime?
+  scheduledat      DateTime?
+  resolvedat       DateTime?
+  closedat         DateTime?
+  driverid         Int?
+  vehicleid        Int?
+  note             String?
+  createdat        DateTime?
+  updatedat        DateTime?
+
+  @@map("ticket")
 }
 
 model Trip {
-  id                        Int       @id @default(autoincrement())
+  id                        Int       @id
   triptypeid                Int?
   tripstatusid              Int?
   tripsourceid              Int?
   vehicleid                 Int?
-  vehicle                   Vehicle?  @relation(fields: [vehicleid], references: [id])
   driverid                  Int?
-  driver                    Driver?   @relation(fields: [driverid], references: [id])
   submittedat               DateTime?
   transmittedat             DateTime?
   respondedat               DateTime?
@@ -210,184 +687,79 @@ model Trip {
   fare                      Decimal?
   paymenttypeid             Int?
   note                      String?
-  createdat                 DateTime  @default(now())
-  updatedat                 DateTime  @updatedAt
-}
+  createdat                 DateTime?
+  updatedat                 DateTime?
+  driver                    Driver?   @relation(fields: [driverid], references: [id])
+  vehicle                   Vehicle?  @relation(fields: [vehicleid], references: [id])
 
-// --- Maintenance & Finance ---
-
-model VehicleService {
-  id                   Int       @id @default(autoincrement())
-  vehicleservicetypeid Int?
-  vehicleid            Int?
-  vehicle              Vehicle?  @relation(fields: [vehicleid], references: [id])
-  companyid            Int?
-  vehicleservicetaskid Int?
-  datetime             DateTime?
-  description          String?
-  odometer             Int?
-  totalamount          Decimal?
-  invoicenumber        String?
-  nextserviceat        DateTime?
-  nextserviceodometer  Int?
-  note                 String?
-  createdat            DateTime  @default(now())
-  updatedat            DateTime  @updatedAt
-}
-
-model Transaction {
-  id                Int       @id @default(autoincrement())
-  transactiontypeid Int?
-  date              DateTime?
-  fromtypeid        Int?
-  fromid            Int?
-  totypeid          Int?
-  toid              Int?
-  amount            Decimal?  @default(0)
-  description       String?
-  vehicleid         Int?
-  personid          Int?
-  note              String?
-  createddate       DateTime  @default(now())
-  updateddate       DateTime  @updatedAt
-  officialtypeid    Int?
-}
-
-// --- Metadata & Lookups ---
-
-model Company {
-  id                 Int      @id @default(autoincrement())
-  companytypeid      Int?
-  companylegalformid Int?
-  name               String?
-  street             String?
-  housenr            String?
-  pobox              String?
-  city               String?
-  countryid          Int?
-  phone              String?
-  email              String?
-  website            String?
-  vatid              String?
-  taxid              String?
-  bankname           String?
-  iban               String?
-  bic                String?
-  note               String?
-  createdat          DateTime @default(now())
-  updatedat          DateTime @updatedAt
-}
-
-model Bank {
-  id          Int      @id @default(autoincrement())
-  banktypeid  Int?
-  name        String
-  note        String?
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
-}
-
-model BankAccount {
-  id                Int      @id @default(autoincrement())
-  bankaccounttypeid Int?
-  name              String?
-  bankname          String?
-  iban              String?
-  bic               String?
-  personid          Int?
-  currencyid        Int?
-  isactive          Boolean? @default(true)
-  note              String?
-  createdat         DateTime @default(now())
-  updatedat         DateTime @updatedAt
-}
-
-model Ticket {
-  id               Int       @id @default(autoincrement())
-  tickettypeid     Int?
-  ticketcategoryid Int?
-  createdbyid      Int?
-  requesterid      Int?
-  assignedtoid     Int?
-  priorityid       Int?
-  ticketstatusid   Int?
-  sortorder        Int?
-  subject          String?
-  description      String?
-  dueat            DateTime?
-  scheduledat      DateTime?
-  resolvedat       DateTime?
-  closedat         DateTime?
-  note             String?
-  createdat        DateTime  @default(now())
-  updatedat        DateTime  @updatedAt
+  @@map("trip")
 }
 
 model Performance {
-  id                      Int      @id @default(autoincrement())
-  driverid                Int?     @default(0)
+  id                      Int       @id @default(autoincrement())
+  driverid                Int?
   week                    String?
-  netearningsbolt         Decimal? @default(0)
-  tollfeesbolt            Decimal? @default(0)
-  ridertipsbolt           Decimal? @default(0)
-  collectedcashbolt       Decimal? @default(0)
-  earningsperformancebolt Decimal? @default(0)
-  finishedridesbolt       Int?     @default(0)
-  onlinetimebolt          Decimal? @default(0)
-  totalridedistancebolt   Decimal? @default(0)
-  totalacceptanceratebolt Decimal? @default(0)
-  netearningsuber         Decimal? @default(0)
-  tollfeesuber            Decimal? @default(0)
-  ridertipsuber           Decimal? @default(0)
-  collectedcashuber       Decimal? @default(0)
-  earningsperformanceuber Decimal? @default(0)
-  finishedridesuber       Int?     @default(0)
-  onlinetimeuber          Decimal? @default(0)
-  totalridedistanceuber   Decimal? @default(0)
-  totalacceptancerateuber Decimal? @default(0)
+  netearningsbolt         Decimal?
+  tollfeesbolt            Decimal?
+  ridertipsbolt           Decimal?
+  collectedcashbolt       Decimal?
+  earningsperformancebolt Decimal?
+  finishedridesbolt       Int?
+  onlinetimebolt          Decimal?
+  totalridedistancebolt   Decimal?
+  totalacceptanceratebolt Decimal?
+  netearningsuber         Decimal?
+  tollfeesuber            Decimal?
+  ridertipsuber           Decimal?
+  collectedcashuber       Decimal?
+  earningsperformanceuber Decimal?
+  finishedridesuber       Int?
+  onlinetimeuber          Decimal?
+  totalridedistanceuber   Decimal?
+  totalacceptancerateuber Decimal?
   note                    String?
-  createdat               DateTime @default(now())
-  updatedat               DateTime @updatedAt
+  createdat               DateTime?
+  updatedat               DateTime?
+  driver                  Driver?   @relation(fields: [driverid], references: [id])
+
+  @@unique([driverid, week])
+  @@map("performance")
 }
 
-// --- Simple Lookups ---
+// ── Additional Tables (not in JSON export but used by PHP modules) ──────────
 
-model Department {
-  id          Int      @id @default(autoincrement())
-  name        String
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
-}
-
-model JobTitle {
-  id          Int      @id @default(autoincrement())
-  name        String
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
+model EventType {
+  id          Int       @id @default(autoincrement())
+  name        String?
   note        String?
+  createddate DateTime?
+  updateddate DateTime?
+
+  @@map("eventtype")
 }
 
-model Make {
-  id          Int      @id @default(autoincrement())
-  name        String
-  note        String?
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
+model Event {
+  id                Int       @id @default(autoincrement())
+  eventtypeid       Int?
+  name              String?
+  date              DateTime?
+  timefrom          String?
+  timeto            String?
+  locationname      String?
+  locationmapslink  String?
+  note              String?
+  createddate       DateTime?
+  updateddate       DateTime?
+
+  @@map("event")
 }
 
-model Model {
-  id          Int      @id @default(autoincrement())
-  makeid      Int?
-  name        String
-  note        String?
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
-}
+model Cash {
+  id          Int       @id @default(autoincrement())
+  cashtypeid  Int?
+  amount      Decimal?
+  description String?
+  entrydate   DateTime?
 
-model Color {
-  id          Int      @id @default(autoincrement())
-  name        String
-  note        String?
-  createddate DateTime @default(now())
-  updateddate DateTime @updatedAt
+  @@map("cash")
 }

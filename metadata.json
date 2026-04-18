@@ -1,5 +1,5 @@
 {
-  "name": "FleetTrack Driver",
+  "name": "Setmobile",
   "description": "Enterprise Fleet Tracking System with NestJS, PostgreSQL (via Prisma), and JWT Auth. Supports offline GPS tracking and shift management.",
   "requestFramePermissions": ["geolocation"]
 }

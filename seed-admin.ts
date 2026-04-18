@@ -1,77 +1,60 @@
-
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'admin@setmobil.com';
-  const password = 'admin123';
-  console.log('Hashing password:', password);
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash("admin123", 10);
 
-  // Create or get Person first
-  const person = await prisma.person.upsert({
+  const adminPerson = await prisma.person.upsert({
     where: { id: 1 },
-    update: {
-      firstname: 'System',
-      lastname: 'Admin',
-      email: email
-    },
-    create: {
-      id: 1,
-      firstname: 'System',
-      lastname: 'Admin',
-      email: email,
-      persontypeid: 1 // Admin type
-    }
+    update: {},
+    create: { firstname: "Admin", lastname: "User", email: "admin@setmobile.com", persontypeid: 1 },
   });
 
-  const admin = await prisma.user.upsert({
-    where: { username: email },
-    update: {
-      password: hashedPassword,
-      active: true,
-      personid: person.id
-    },
-    create: {
-      username: email,
-      password: hashedPassword,
-      active: true,
-      personid: person.id,
-      note: 'Initial Admin'
-    }
+  await prisma.user.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: { username: "admin", password: hashedPassword, personid: adminPerson.id, active: true },
   });
 
-  // Ensure Employee record exists
   await prisma.employee.upsert({
     where: { id: 1 },
-    update: { personid: person.id },
-    create: {
-      id: 1,
-      personid: person.id,
-      employeenumber: 'ADMIN-001'
-    }
+    update: {},
+    create: { personid: adminPerson.id, employeenumber: "EMP-001" },
   });
 
-  // Ensure Driver record exists
+  const driverPerson = await prisma.person.upsert({
+    where: { id: 2 },
+    update: {},
+    create: { firstname: "Test", lastname: "Surucu", email: "driver@setmobile.com", persontypeid: 2 },
+  });
+
+  await prisma.user.upsert({
+    where: { username: "driver" },
+    update: {},
+    create: { username: "driver", password: await bcrypt.hash("driver123", 10), personid: driverPerson.id, active: true },
+  });
+
   await prisma.driver.upsert({
     where: { id: 1 },
-    update: { personid: person.id },
-    create: {
-      id: 1,
-      personid: person.id
-    }
+    update: {},
+    create: { personid: driverPerson.id },
   });
 
-  console.log('Admin user created/updated:', admin.username);
+  await prisma.employee.upsert({
+    where: { id: 2 },
+    update: {},
+    create: { personid: driverPerson.id, employeenumber: "EMP-002" },
+  });
+
+  console.log(`
+Seed tamamlandi!
+Admin  -> kullanici: admin   | sifre: admin123
+Surucu -> kullanici: driver  | sifre: driver123
+`);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());

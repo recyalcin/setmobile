@@ -6,3 +6,5 @@ coverage/
 *.log
 .env*
 !.env.example
+sm1_full_tables.json
+*.tmp
