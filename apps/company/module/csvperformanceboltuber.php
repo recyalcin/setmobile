@@ -2,10 +2,11 @@
 /**
  * module/csvperformanceboltuber.php
  * Zentrales Import-Tool für Bolt- und Uber-Statistiken.
- * * Namen-Logik:
- * BOLT: 1. Wort=First, Letztes=Last, Rest=Middle
- * UBER: Vorname(1. Wort=First, Rest=Middle), Nachname=Last
- * * Abgleich: Über firstname und lastname.
+ * * LOGIK FÜR NAMEN-ABGLEICH:
+ * - "büyük i" (İ) -> "i" / "I" -> "i"
+ * - "küçük I" (ı) -> "i"
+ * - ü -> u, ö -> o, ä -> a, ß -> ss usw.
+ * - Alles wird für den Vergleich normalisiert.
  */
 
 if (!isset($pdo)) { die("Kein direkter Zugriff."); }
@@ -13,6 +14,23 @@ if (!isset($pdo)) { die("Kein direkter Zugriff."); }
 $msg = ""; 
 $errorLog = [];
 $importWeek = isset($_POST['week']) ? $_POST['week'] : date('Y-m-d', strtotime('monday last week'));
+
+/**
+ * Hilfsfunktion: String-Normalisierung für den Namensabgleich
+ * Setzt die Anforderungen: İ/I/ı -> i, Umlaute -> Vokal, Kleinschreibung
+ */
+function normalizeName($str) {
+    if ($str === null) return "";
+    
+    // Spezielle türkische Logik & Umlaute
+    $search  = ['İ', 'ı', 'ö', 'ü', 'ä', 'Ö', 'Ü', 'Ä', 'ß', 'ş', 'Ş', 'ğ', 'Ğ', 'ç', 'Ç'];
+    $replace = ['i', 'i', 'o', 'u', 'a', 'o', 'u', 'a', 'ss', 's', 's', 'g', 'g', 'c', 'c'];
+    
+    $str = str_replace($search, $replace, $str);
+    
+    // In Kleinschreibung umwandeln und trimmen
+    return mb_strtolower(trim($str), 'UTF-8');
+}
 
 /**
  * Hilfsfunktion: Bereinigung von Zahlen (1.000,00 -> 1000.00)
@@ -78,21 +96,31 @@ function getDriverIdFromUberNames($pdo, $uberVorname, $uberNachname) {
 
 /**
  * Kernfunktion: Findet oder erstellt Person & Driver
- * Kontrolle erfolgt über firstname und lastname
+ * Nutzt Normalisierung für den Namensabgleich
  */
 function getDriverIdByParts($pdo, $fName, $mName, $lName) {
-    // 1. Person suchen (Kontrolle nur über firstname & lastname)
-    $stmtP = $pdo->prepare("SELECT id FROM person WHERE firstname = ? AND lastname = ? LIMIT 1");
-    $stmtP->execute([$fName, $lName]);
-    $personId = $stmtP->fetchColumn();
+    $normFirst = normalizeName($fName);
+    $normLast  = normalizeName($lName);
+
+    // 1. Alle Personen laden für den normalisierten Abgleich
+    // (Bei sehr vielen Fahrern könnte man dies cachen, für den Import ist es so aber am sichersten)
+    $stmt = $pdo->query("SELECT id, firstname, lastname FROM person");
+    $personId = null;
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if (normalizeName($row['firstname']) === $normFirst && normalizeName($row['lastname']) === $normLast) {
+            $personId = $row['id'];
+            break;
+        }
+    }
 
     if (!$personId) {
-        // Neu anlegen mit allen 3 Feldern
+        // Neu anlegen, falls kein normalisierter Treffer
         $insP = $pdo->prepare("INSERT INTO person (firstname, middlename, lastname, createdat) VALUES (?, ?, ?, NOW())");
         $insP->execute([$fName, $mName, $lName]);
         $personId = $pdo->lastInsertId();
     } else {
-        // Middlename aktualisieren, falls er leer ist oder sich geändert hat
+        // Middlename aktualisieren, falls er in der DB leer ist
         $updP = $pdo->prepare("UPDATE person SET middlename = ? WHERE id = ? AND (middlename IS NULL OR middlename = '')");
         $updP->execute([$mName, $personId]);
     }
@@ -111,7 +139,7 @@ function getDriverIdByParts($pdo, $fName, $mName, $lName) {
     return $driverId;
 }
 
-// 2. Import-Verarbeitung
+// Import-Verarbeitung
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $count = 0;
     $action = $_POST['action'];
@@ -132,7 +160,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     if (count($data) < 30) continue;
                     $driverId = getDriverIdFromBoltName($pdo, $data[0]);
                 } else {
-                    // Uber: Vorname(1), Nachname(2)
                     if (count($data) < 3) continue;
                     $driverId = getDriverIdFromUberNames($pdo, $data[1], $data[2]);
                 }
