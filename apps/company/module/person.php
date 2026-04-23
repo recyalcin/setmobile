@@ -1,6 +1,8 @@
 <?php
 /**
- * module/person.php - Dynamisches Layout mit konditionaler Formular-Anzeige
+ * module/person.php - Fokus: Case-Insensitive Suche (ILIKE)
+ * Layout: Suche -> Info -> Dynamisch (Form/Liste)
+ * PostgreSQL Fix (id::text) + Case-Insensitivity (ILIKE)
  */
 
 if (!isset($pdo)) { die("Kein direkter Zugriff."); }
@@ -51,15 +53,13 @@ if (isset($_POST['save_person'])) {
         $sql = "UPDATE person SET $setClause WHERE id=?";
         $params[] = $id;
         $pdo->prepare($sql)->execute($params);
-        // Redirect OHNE edit=new (Formular schließen)
-        $redirect = "/person&msg=updated&name=$nameParam";
+        $redirect = "/?route=module/person&msg=updated&name=$nameParam";
     } else {
         $placeholders = str_repeat('?,', count($fields)) . 'NOW()';
         $colNames = implode(', ', $fields) . ', createdat';
         $sql = "INSERT INTO person ($colNames) VALUES ($placeholders)";
         $pdo->prepare($sql)->execute($params);
-        // Redirect OHNE edit=new (Formular schließen)
-        $redirect = "/person&msg=created&name=$nameParam";
+        $redirect = "/?route=module/person&msg=created&name=$nameParam";
     }
 }
 
@@ -72,13 +72,12 @@ if (isset($_GET['delete'])) {
 
     $stmt = $pdo->prepare("DELETE FROM person WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
-    // Redirect OHNE edit=new
-    $redirect = "/person&msg=deleted&name=$nameParam";
+    $redirect = "/?route=module/person&msg=deleted&name=$nameParam";
 }
 
 if ($redirect) { echo "<script>window.location.href='$redirect';</script>"; exit; }
 
-// --- 2. STAMMDATEN & STATUS ---
+// --- 2. DATEN & STATUS ---
 $personTypes = $pdo->query("SELECT id, name FROM persontype ORDER BY name ASC")->fetchAll();
 
 if (isset($_GET['msg'])) {
@@ -105,14 +104,26 @@ if ($edit === null && $isEdit) {
     $edit = $stmt->fetch();
 }
 
-// --- 3. LISTE ---
+// --- 3. LISTE (Globale Suche mit ILIKE für Case-Insensitivity) ---
 $sql = "SELECT p.*, pt.name as type_name FROM person p LEFT JOIN persontype pt ON p.persontypeid = pt.id WHERE 1=1";
 $queryParams = [];
+
 if (!empty($searchTerm)) {
-    $sql .= " AND (p.lastname LIKE ? OR p.firstname LIKE ? OR p.email LIKE ? OR p.city LIKE ? OR p.id LIKE ?)";
+    // Liste aller Felder für die Suche
+    // ILIKE statt LIKE macht in PostgreSQL den Unterschied (klein/groß egal)
+    $searchFields = [
+        "p.firstname", "p.lastname", "p.middlename", "p.email", "p.phone", 
+        "p.street", "p.housenr", "p.pobox", "p.city", "p.country", 
+        "p.taxid", "p.bankname", "p.iban", "p.bic", "p.birthcity", 
+        "p.birthcountry", "p.nationality", "p.gender", "p.note",
+        "p.id::text", "p.persontypeid::text", "p.dateofbirth::text"
+    ];
+    
+    $sql .= " AND (" . implode(" ILIKE ? OR ", $searchFields) . " ILIKE ?)";
     $like = "%$searchTerm%";
-    $queryParams = [$like, $like, $like, $like, $like];
+    $queryParams = array_fill(0, count($searchFields), $like);
 }
+
 $sql .= " ORDER BY p.lastname ASC, p.firstname ASC LIMIT 100";
 $stmtList = $pdo->prepare($sql);
 $stmtList->execute($queryParams);
@@ -141,11 +152,9 @@ $list = $stmtList->fetchAll();
 <div class="card search-card">
     <form method="get" action="/" style="display: flex; gap: 10px; width: 100%;">
         <input type="hidden" name="route" value="module/person">
-        <input type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Name, E-Mail, Ort suchen..." style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
+        <input type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Suche..." style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
         <button type="submit" class="btn-action neu-bg" style="padding: 8px 25px;">🔍 Suchen</button>
-        <?php if(!empty($searchTerm)): ?>
-            <a href="/person" class="btn-action cancel-bg">✖ Filter löschen</a>
-        <?php endif; ?>
+        <?php if(!empty($searchTerm)): ?><a href="/?route=module/person" class="btn-action cancel-bg">✖ Filter löschen</a><?php endif; ?>
     </form>
 </div>
 
@@ -157,17 +166,17 @@ ob_start(); ?>
 <div class="card" style="margin-bottom: 25px; border-left: 5px solid #3b82f6;">
     <div style="display: flex; justify-content: space-between; align-items: center; <?= $showForm ? 'margin-bottom: 15px;' : '' ?>">
         <h3 style="margin:0;">👤 Personen-Stammdaten</h3>
-        <a href="/person&edit=new" class="btn-action neu-bg">+ Neue Person</a>
+        <a href="/?route=module/person&edit=new" class="btn-action neu-bg">+ Neue Person</a>
     </div>
 
     <?php if ($showForm): ?>
-    <form method="post" action="/person" class="form-container">
+    <form method="post" action="/?route=module/person" class="form-container">
         <input type="hidden" name="id" value="<?= htmlspecialchars($edit['id'] ?? '') ?>">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
             <div>
                 <h4 style="margin-top:0; color:#1e40af; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Allgemein</h4>
-                <div class="form-row"><label>Typ / Geschlecht</label>
+                <div class="form-row"><label>Typ / Gender</label>
                     <select name="persontypeid" style="width:48%; margin-right:2%;">
                         <option value="0">-- Typ --</option>
                         <?php foreach($personTypes as $pt): ?>
@@ -238,9 +247,9 @@ ob_start(); ?>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <div><?php if(!empty($edit['id'])): ?><a href="/person&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
+            <div><?php if(!empty($edit['id'])): ?><a href="/?route=module/person&delete=<?= $edit['id'] ?>" class="btn-action delete-bg" onclick="return confirm('Löschen?')">🗑 Löschen</a><?php endif; ?></div>
             <div style="display: flex; gap: 10px;">
-                <a href="/person" class="btn-action cancel-bg">Abbrechen</a>
+                <a href="/?route=module/person" class="btn-action cancel-bg">Abbrechen</a>
                 <?php if(!empty($edit['id'])): ?><button type="submit" name="duplicate_person" class="btn-action dupli-bg">📑 Duplizieren</button><?php endif; ?>
                 <button type="submit" name="save_person" class="btn-action" style="padding:10px 40px; color:white; font-weight:bold; background:#3b82f6;">
                     <?= (!empty($edit['id'])) ? '💾 Update' : '💾 Speichern' ?>
@@ -262,7 +271,7 @@ ob_start(); ?>
                 <th style="width: 50px;">ID</th>
                 <th>Name</th>
                 <th>Typ</th>
-                <th>Kontakt / E-Mail</th>
+                <th>Kontakt</th>
                 <th>Ort</th>
                 <th style="text-align:right;">Aktionen</th>
             </tr>
@@ -273,14 +282,12 @@ ob_start(); ?>
                 <td><small style="color: #94a3b8;">#<?= $p['id'] ?></small></td>
                 <td><strong><?= htmlspecialchars($p['lastname']) ?></strong>, <?= htmlspecialchars($p['firstname']) ?></td>
                 <td><small><?= htmlspecialchars($p['type_name'] ?? '-') ?></small></td>
-                <td><small><?= htmlspecialchars($p['email'] ?? '-') ?></small><br><small style="color:#64748b;"><?= htmlspecialchars($p['phone'] ?? '') ?></small></td>
+                <td><small><?= htmlspecialchars($p['email'] ?? '-') ?></small></td>
                 <td><small><?= htmlspecialchars($p['city'] ?? '-') ?></small></td>
-                <td style="text-align:right;"><a href="/person&edit=<?= $p['id'] ?>" class="edit-link">✎</a></td>
+                <td style="text-align:right;"><a href="/?route=module/person&edit=<?= $p['id'] ?>" class="edit-link">✎</a></td>
             </tr>
             <?php endforeach; ?>
-            <?php if(empty($list)): ?>
-                <tr><td colspan="6" style="text-align:center; padding: 20px; color: #94a3b8;">Keine Datensätze gefunden.</td></tr>
-            <?php endif; ?>
+            <?php if(empty($list)): ?><tr><td colspan="6" style="text-align:center; padding: 20px;">Keine Datensätze gefunden.</td></tr><?php endif; ?>
         </tbody>
     </table>
 </div>
@@ -288,13 +295,7 @@ ob_start(); ?>
 
 <?php 
 // DYNAMISCHE AUSGABE
-if (!empty($searchTerm)) {
-    echo $listCard;
-    echo $formCard;
-} else {
-    echo $formCard;
-    echo $listCard;
-}
+if (!empty($searchTerm)) { echo $listCard . $formCard; } else { echo $formCard . $listCard; }
 ?>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

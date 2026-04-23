@@ -1,6 +1,8 @@
 <?php
 if (!isset($pdo)) { die("Zugriff verweigert."); }
-require_once __DIR__ . '/menu.php';
+
+// Da header.php und menuinc.php beide im Ordner /inc/ liegen, reicht __DIR__
+require_once __DIR__ . '/menuinc.php';
 ?>
 <!DOCTYPE html>
 <html lang="de">

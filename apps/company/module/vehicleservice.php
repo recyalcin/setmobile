@@ -209,16 +209,19 @@ $renderList = function() use ($list, $totalPages, $page, $f_q) { ?>
                         <div style="font-weight:bold;"><?= date('d.m.Y', strtotime($vs['datetime'])) ?></div>
                         <div style="font-size:11px; color:#64748b;"><?= date('H:i', strtotime($vs['datetime'])) ?></div>
                     </td>
-                    <td><strong><?= htmlspecialchars($vs['licenseplate'] ?: '-') ?></strong><br><small><?= number_format($vs['odometer'], 0, ',', '.') ?> km</small></td>
+                    <td>
+                        <strong><?= htmlspecialchars($vs['licenseplate'] ?: '-') ?></strong><br>
+                        <small><?= number_format((float)($vs['odometer'] ?? 0), 0, ',', '.') ?> km</small>
+                    </td>
                     <td>
                         <span class="badge"><?= htmlspecialchars($vs['typename'] ?: '-') ?></span><br>
                         <small><?= htmlspecialchars($vs['taskname'] ?: '-') ?></small>
                     </td>
-                    <td><?= $vs['totalamount'] ? number_format($vs['totalamount'], 2, ',', '.') . ' €' : '-' ?></td>
+                    <td><?= $vs['totalamount'] ? number_format((float)$vs['totalamount'], 2, ',', '.') . ' €' : '-' ?></td>
                     <td>
                         <div style="font-size:12px;">
                             📅 <?= $vs['nextserviceat'] ? date('d.m.Y', strtotime($vs['nextserviceat'])) : '-' ?><br>
-                            🚗 <?= $vs['nextserviceodometer'] ? number_format($vs['nextserviceodometer'], 0, ',', '.') . ' km' : '-' ?>
+                            🚗 <?= $vs['nextserviceodometer'] ? number_format((float)$vs['nextserviceodometer'], 0, ',', '.') . ' km' : '-' ?>
                         </div>
                     </td>
                     <td style="text-align:right;">
