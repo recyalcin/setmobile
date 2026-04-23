@@ -83,14 +83,23 @@ export class AdminService {
       vehicleAssignment: { driver: { include: { person: true } }, vehicle: true },
       workingHours: { employee: { include: { person: true } }, vehicle: true },
       vehicleLocation: { driver: { include: { person: true } }, vehicle: true },
-      user: true,
+      user: { person: true, appuserrole: true },
     };
 
-    return client[model].findMany({
+    const rows = await client[model].findMany({
       include: includeMap[model] || undefined,
       orderBy: { id: 'desc' },
       take: 200,
     });
+
+    if (model === 'user') {
+      return rows.map((row: any) => ({
+        ...row,
+        role: row.appuserrole?.name ?? null,
+      }));
+    }
+
+    return rows;
   }
 
   async create(model: string, data: any) {

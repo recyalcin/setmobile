@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './src/server/app.module';
+import { AppModule } from './server/src/app.module';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';

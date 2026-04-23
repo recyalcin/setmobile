@@ -507,7 +507,25 @@ async function main() {
       prisma.driverActivity.upsert({
         where: { id: r.id },
         update: {},
-        create: { id: r.id, driveractivitytypeid: r.driveractivitytypeid, driverid: r.driverid, vehicleid: r.vehicleid, tripid: r.tripid, datetime: toDate(r.datetime), lat: toDecimal(r.lat), lng: toDecimal(r.lng), odometer: toDecimal(r.odometer), note: r.note, createddate: toDate(r.createddate), updateddate: toDate(r.updateddate) },
+        create: {
+          id: r.id,
+          driveractivitytypeid: r.driveractivitytypeid,
+          driverid: r.driverid,
+          vehicleid: r.vehicleid,
+          tripid: r.tripid,
+          personid: r.personid,
+          datetime: toDate(r.datetime),
+          lat: toDecimal(r.lat),
+          lng: toDecimal(r.lng),
+          odometer: r.odometer == null ? null : Number(r.odometer),
+          speed: toDecimal(r.speed),
+          heading: toDecimal(r.heading),
+          note: r.note,
+          createddate: toDate(r.createddate),
+          updateddate: toDate(r.updateddate),
+          createdat: toDate(r.createdat),
+          updatedat: toDate(r.updatedat),
+        },
       })
     );
     res ? ok++ : skip++;

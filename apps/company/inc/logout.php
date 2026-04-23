@@ -4,10 +4,9 @@
  * Beendet die Sitzung sicher und entfernt den Remember-Me-Token.
  */
 
-// Falls die Session noch nicht gestartet wurde
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session.php';
+
+ensureCompanySessionStorage();
 
 // db.php eğer $pdo yoksa yükle
 if (!isset($pdo)) {

@@ -8,13 +8,28 @@ export class ShiftsController {
   constructor(@Inject(ShiftsService) private readonly shiftsService: ShiftsService) {}
 
   @Post('start')
-  startShift(@Request() req: any, @Body() body: { startKm: number }) {
-    return this.shiftsService.createShift(req.user.userId, body.startKm);
+  startShift(@Request() req: any, @Body() body: { startKm: number; latitude?: number; longitude?: number; speed?: number; heading?: number }) {
+    return this.shiftsService.createShift(req.user.userId, body.startKm, {
+      latitude: body.latitude,
+      longitude: body.longitude,
+      speed: body.speed,
+      heading: body.heading,
+    });
   }
 
   @Post(':id/end')
-  endShift(@Param('id', ParseIntPipe) id: number, @Body() body: { endKm: number }) {
-    return this.shiftsService.endShift(id, body.endKm);
+  endShift(
+    @Request() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { endKm: number; latitude?: number; longitude?: number; speed?: number; heading?: number },
+  ) {
+    return this.shiftsService.endShift(id, body.endKm, {
+      userId: req.user.userId,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      speed: body.speed,
+      heading: body.heading,
+    });
   }
 
   @Get('active')

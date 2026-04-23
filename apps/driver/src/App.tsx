@@ -56,6 +56,15 @@ interface Telemetry {
 
 type View = 'driving' | 'history' | 'profile' | 'admin';
 
+function getActivityMeta(coords?: GeolocationCoordinates | null) {
+  return {
+    latitude: coords?.latitude ?? null,
+    longitude: coords?.longitude ?? null,
+    speed: coords?.speed ?? null,
+    heading: coords?.heading ?? null,
+  };
+}
+
 // --- API Helpers ---
 
 // Native APK uses absolute URL; web (dev + production nginx proxy) uses relative path
@@ -158,7 +167,11 @@ export default function App() {
       } else {
         const data = await apiFetch('/auth/login', {
           method: 'POST',
-          body: JSON.stringify({ username: authData.username, password: authData.password }),
+          body: JSON.stringify({
+            username: authData.username,
+            password: authData.password,
+            ...getActivityMeta(currentLocation),
+          }),
         });
         if (!data?.access_token) {
           throw new Error(data?.error || 'Giriş başarısız');
@@ -171,10 +184,18 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (activeShift) {
       setError(t('logout_error_shift_active') || 'Please end your shift first.');
       return;
+    }
+    try {
+      await apiFetch('/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify(getActivityMeta(currentLocation)),
+      });
+    } catch (err) {
+      console.error('Logout activity log failed', err);
     }
     localStorage.removeItem('token');
     setUser(null);
@@ -229,7 +250,10 @@ export default function App() {
     try {
       const shift = await apiFetch('/shifts/start', {
         method: 'POST',
-        body: JSON.stringify({ startKm: parseFloat(startKm) }),
+        body: JSON.stringify({
+          startKm: parseFloat(startKm),
+          ...getActivityMeta(currentLocation),
+        }),
       });
       setActiveShift(shift);
       setIsTracking(true);
@@ -261,7 +285,10 @@ export default function App() {
       console.log(`Sending end shift request for ID: ${activeShift.id}`);
       const updatedShift = await apiFetch(`/shifts/${activeShift.id}/end`, {
         method: 'POST',
-        body: JSON.stringify({ endKm: endKmNum }),
+        body: JSON.stringify({
+          endKm: endKmNum,
+          ...getActivityMeta(currentLocation),
+        }),
       });
       
       console.log('Shift ended successfully:', updatedShift);

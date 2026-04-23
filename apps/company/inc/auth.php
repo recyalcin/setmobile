@@ -1,6 +1,8 @@
 <?php
 // auth.php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/session.php';
+
+ensureCompanySessionStorage();
 
 // Pfad-Sicherheit: Verhindere direkten Aufruf von .php Dateien in Unterordnern
 if (count(get_included_files()) <= 1) {

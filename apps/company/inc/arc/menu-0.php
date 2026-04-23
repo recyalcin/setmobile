@@ -47,18 +47,14 @@ function renderSideMenu($items, $currentroute, $level = 0) {
             echo '</div>';
         } else {
             $padding = ($level * 15 + 20);
-            $url = trim((string)$item['url'], '/');
-            $href = (strpos($url, 'admin/') === 0)
-                ? '/' . $url
-                : '/module/' . $url;
-            echo '<a href="'.htmlspecialchars($href).'" class="nav-link '.$active.'" style="padding-left:'.$padding.'px;">';
+            echo '<a href="'.htmlspecialchars((string)$item['url']).'" class="nav-link '.$active.'" style="padding-left:'.$padding.'px;">';
             echo htmlspecialchars((string)$item['name']) . '</a>';
         }
     }
 }
 
 // Statik menü (veritabanı bağımsız)
-$currentRoute = $_GET['route'] ?? 'dashboard';
+$currentRoute = $_GET['route'] ?? 'module/dashboard';
 
 $menuTree = [
     ['id'=>1,  'name'=>'🏠 Dashboard',        'url'=>'dashboard',   'parentid'=>0],

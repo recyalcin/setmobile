@@ -653,7 +653,7 @@ function DataTableView({ activeTab, data, loading, onEdit, onDelete, onSelect }:
                     {activeTab === 'settings' && (
                       <>
                         <td className="px-6 py-4 font-bold">{row.username}</td>
-                        <td className="px-6 py-4 text-neutral-400">{row.role || 'Admin'}</td>
+                        <td className="px-6 py-4 text-neutral-400">{row.role || row.appuserrole?.name || '-'}</td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 rounded-md bg-green-500/10 text-green-500 text-[10px] font-bold uppercase">Aktif</span>
                         </td>

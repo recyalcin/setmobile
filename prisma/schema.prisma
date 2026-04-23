@@ -383,13 +383,18 @@ model DriverActivity {
   driverid              Int?
   vehicleid             Int?
   tripid                Int?
+  personid              Int?
   datetime              DateTime?
   lat                   Decimal?
   lng                   Decimal?
-  odometer              Decimal?
+  odometer              Int?
+  speed                 Decimal?
+  heading               Decimal?
   note                  String?
   createddate           DateTime?
   updateddate           DateTime?
+  createdat             DateTime?
+  updatedat             DateTime?
 
   @@map("driveractivity")
 }
@@ -504,16 +509,30 @@ model Person {
   @@map("person")
 }
 
+model AppUserRole {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  note      String?
+  createdat DateTime?
+  updatedat DateTime?
+  users     User[]
+
+  @@map("appuserrole")
+}
+
 model User {
-  id            Int      @id @default(autoincrement())
-  username      String   @unique
+  id            Int          @id @default(autoincrement())
+  username      String       @unique
   password      String
   personid      Int?
-  active        Boolean  @default(true)
-  role          String?  @default("driver")
+  active        Boolean      @default(true)
   remembertoken String?
-  createdat     DateTime @default(now())
-  person        Person?  @relation(fields: [personid], references: [id])
+  createdat     DateTime     @default(now())
+  note          String?
+  updatedat     DateTime?
+  appuserroleid Int?
+  person        Person?      @relation(fields: [personid], references: [id])
+  appuserrole   AppUserRole? @relation(fields: [appuserroleid], references: [id])
 
   @@map("appuser")
 }
