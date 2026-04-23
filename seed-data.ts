@@ -27,10 +27,10 @@ async function main() {
   ]);
 
   const models = await Promise.all([
-    prisma.model.upsert({ where: { id: 1 }, update: {}, create: { id: 1, makeid: 1, name: 'Vito' } }),
-    prisma.model.upsert({ where: { id: 2 }, update: {}, create: { id: 2, makeid: 1, name: 'Sprinter' } }),
-    prisma.model.upsert({ where: { id: 3 }, update: {}, create: { id: 3, makeid: 2, name: 'Transporter' } }),
-    prisma.model.upsert({ where: { id: 4 }, update: {}, create: { id: 4, makeid: 3, name: 'Transit' } }),
+    prisma.vehicleModel.upsert({ where: { id: 1 }, update: {}, create: { id: 1, makeid: 1, name: 'Vito' } }),
+    prisma.vehicleModel.upsert({ where: { id: 2 }, update: {}, create: { id: 2, makeid: 1, name: 'Sprinter' } }),
+    prisma.vehicleModel.upsert({ where: { id: 3 }, update: {}, create: { id: 3, makeid: 2, name: 'Transporter' } }),
+    prisma.vehicleModel.upsert({ where: { id: 4 }, update: {}, create: { id: 4, makeid: 3, name: 'Transit' } }),
   ]);
 
   const colors = await Promise.all([
@@ -114,8 +114,8 @@ async function main() {
           date: date,
           workstartat: new Date(date.setHours(8, 0, 0)),
           workendat: new Date(date.setHours(18, 0, 0)),
-          hours0004: 100000 + (i * 100), // Start KM
-          hours2006: 100000 + (i * 100) + 150, // End KM
+          startkm: 100000 + (i * 100),
+          endkm: 100000 + (i * 100) + 150,
           hourstotal: 10,
           note: 'Günlük rutin vardiya'
         }
@@ -130,7 +130,7 @@ async function main() {
           vehicleid: vehicleId,
           date: new Date(),
           workstartat: new Date(new Date().setHours(new Date().getHours() - 2)),
-          hours0004: 105000,
+          startkm: 105000,
           note: 'Aktif vardiya'
         }
       });
@@ -145,8 +145,8 @@ async function main() {
           date: new Date(),
           workstartat: new Date(new Date().setHours(new Date().getHours() - 8)),
           workendat: new Date(new Date().setHours(new Date().getHours() - 1)),
-          hours0004: 106000,
-          hours2006: 106120,
+          startkm: 106000,
+          endkm: 106120,
           note: 'Bugün biten vardiya'
         }
       });

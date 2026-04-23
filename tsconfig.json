@@ -9,16 +9,28 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["apps/driver/src/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "apps/driver/src/**/*.ts",
+    "apps/driver/src/**/*.tsx",
+    "server/**/*.ts",
+    "*.ts"
+  ],
+  "exclude": [
+    "src",
+    "dist",
+    "android",
+    "node_modules"
+  ]
 }

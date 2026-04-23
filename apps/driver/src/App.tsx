@@ -410,7 +410,7 @@ export default function App() {
             
             {/* Language Switcher */}
             <div className="flex justify-center gap-2 pt-2">
-              {['tr', 'en', 'de'].map((lang) => (
+              {['de', 'en', 'tr'].map((lang) => (
                 <button
                   key={lang}
                   onClick={() => i18n.changeLanguage(lang)}
@@ -481,14 +481,6 @@ export default function App() {
             </button>
           </form>
 
-          <div className="text-center">
-            <button 
-              onClick={() => setIsRegistering(!isRegistering)}
-              className="text-orange-500 text-sm font-bold"
-            >
-              {isRegistering ? t('already_have_account') : t('no_account')}
-            </button>
-          </div>
         </motion.div>
       </div>
     );
@@ -730,9 +722,9 @@ export default function App() {
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'tr', label: 'Türkçe' },
+                    { id: 'de', label: 'Deutsch' },
                     { id: 'en', label: 'English' },
-                    { id: 'de', label: 'Deutsch' }
+                    { id: 'tr', label: 'Türkçe' }
                   ].map((lang) => (
                     <button
                       key={lang.id}
