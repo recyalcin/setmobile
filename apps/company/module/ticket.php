@@ -1,6 +1,6 @@
 <?php
 /**
- * module/ticket.php - Fokus: Fix "Hoch"-Button Logik (Einen Platz höher, ignorieren wenn ganz oben)
+ * module/ticket.php - Fokus: Case-insensitive Suche (ILIKE) für PostgreSQL
  */
 
 if (!isset($pdo)) { die("Kein direkter Zugriff."); }
@@ -70,7 +70,7 @@ if (isset($_GET['resolve'])) {
     $redirect = "/ticket&msg=resolved";
 }
 
-// MOVE LOGIK (Anfang, Hoch, Runter, Ende)
+// MOVE LOGIK
 if (isset($_GET['move']) && isset($_GET['dir'])) {
     $moveId = (int)$_GET['move'];
     $dir = $_GET['dir'];
@@ -79,13 +79,11 @@ if (isset($_GET['move']) && isset($_GET['dir'])) {
     $currentOrder = (float)$stmt->fetchColumn();
 
     $changed = false;
-    // Wenn schon an 1. Reihe (sortorder 1), dann ignorieren bei top/up
     if ($dir === 'top' && $currentOrder > 1) { 
         $pdo->prepare("UPDATE ticket SET sortorder = -1 WHERE id = ?")->execute([$moveId]); 
         $changed = true;
     } 
     elseif ($dir === 'up' && $currentOrder > 1) { 
-        // Rückt durch -1.5 vor den vorherigen Datensatz (z.B. von 5 auf 3.5, landet nach Normalisierung auf 4)
         $pdo->prepare("UPDATE ticket SET sortorder = ? WHERE id = ?")->execute([$currentOrder - 1.5, $moveId]); 
         $changed = true;
     } 
@@ -218,7 +216,8 @@ if ($loggedInPersonId > 0) {
     
     $queryParams = [$loggedInPersonId, $loggedInPersonId, $loggedInPersonId];
     if (!empty($searchTerm)) {
-        $sql .= " AND (t.subject LIKE ? OR t.description LIKE ? OR t.note LIKE ? OR t.id LIKE ?)";
+        // UPDATE: ILIKE für case-insensitive Suche in PostgreSQL
+        $sql .= " AND (t.subject ILIKE ? OR t.description ILIKE ? OR t.note ILIKE ? OR t.id::text ILIKE ?)";
         $like = "%$searchTerm%";
         $queryParams = array_merge($queryParams, [$like, $like, $like, $like]);
     }

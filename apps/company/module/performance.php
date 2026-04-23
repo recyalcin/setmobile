@@ -1,6 +1,7 @@
 <?php
 /**
- * module/performance.php - Ranking-Ansicht mit CSV-Namenslogik & Driver/Person-Join
+ * module/performance.php - Vollständiges Performance-Ranking
+ * Logik: Join über driver & person | CSV Name-Split | Filter Ø > 0 | SQL Fix
  */
 
 if (!isset($pdo)) { die("Kein direkter Zugriff."); }
@@ -16,13 +17,11 @@ $filterWeek = $_GET['filter_week'] ?? '';
 function fmt($num) { return number_format((float)($num ?? 0), 2, ',', '.'); }
 
 /**
- * Splittet einen vollen Namen nach der Vorgabe:
- * 1. Wort = Vorname, Letztes Wort = Nachname, Rest = Mittelname
+ * Splittet Namen nach Vorgabe: 1. Wort = Vorname, Letztes Wort = Nachname, Rest = Mittelname
  */
 function splitCsvName($fullName) {
     $parts = explode(' ', trim($fullName));
     $data = ['first' => '', 'middle' => '', 'last' => ''];
-    
     if (count($parts) === 1) {
         $data['first'] = $parts[0];
     } else {
@@ -35,36 +34,8 @@ function splitCsvName($fullName) {
     return $data;
 }
 
-// --- 2. CSV IMPORT LOGIK (Beispiel-Integration) ---
-if (isset($_FILES['performance_csv'])) {
-    $file = $_FILES['performance_csv']['tmp_name'];
-    $handle = fopen($file, "r");
-    $header = fgetcsv($handle, 1000, ";"); // Beispiel Trenner
-    
-    while (($row = fgetcsv($handle, 1000, ";")) !== FALSE) {
-        // Angenommen Spalte 0 ist der Name
-        $csvName = $row[0]; 
-        $nameParts = splitCsvName($csvName);
-        
-        // Eslestir (Matching): person -> driver -> performance
-        $stmt = $pdo->prepare("
-            SELECT d.id 
-            FROM driver d 
-            JOIN person p ON d.personid = p.id 
-            WHERE p.firstname = ? AND p.lastname = ?
-        ");
-        $stmt->execute([$nameParts['first'], $nameParts['last']]);
-        $driver = $stmt->fetch();
-        
-        if ($driver) {
-            // Hier würde die Insert/Update Logik für performance folgen (driverid = $driver['id'])
-        }
-    }
-    fclose($handle);
-    $message = "<div class='alert info-box'>✅ CSV verarbeitet (Namens-Matching abgeschlossen).</div>";
-}
-
-// --- 3. DATEN FÜR FILTER LADEN ---
+// --- 2. DATEN FÜR FILTER LADEN ---
+// Fahrer-Select: performance -> driver -> person
 $filterDriversList = $pdo->query("
     SELECT DISTINCT d.id, p_name.firstname, p_name.lastname 
     FROM person p_name 
@@ -73,9 +44,14 @@ $filterDriversList = $pdo->query("
     ORDER BY p_name.lastname ASC
 ")->fetchAll();
 
-$filterWeeksList = $pdo->query("SELECT DISTINCT week FROM performance WHERE week != '' ORDER BY week DESC")->fetchAll(PDO::FETCH_COLUMN);
+// Wochen-Select
+$filterWeeksList = $pdo->query("
+    SELECT DISTINCT week FROM performance 
+    WHERE week != '' AND week IS NOT NULL 
+    ORDER BY week DESC
+")->fetchAll(PDO::FETCH_COLUMN);
 
-// --- 4. HAUPTABFRAGE (Join perf -> driver -> person) ---
+// --- 3. HAUPTABFRAGE ---
 $searchSql = "";
 $queryParams = [];
 
@@ -97,7 +73,7 @@ $sql_list = "
     FROM performance p
     JOIN driver d ON p.driverid = d.id
     JOIN person p_name ON d.personid = p_name.id
-    LEFT JOIN (
+    JOIN (
         SELECT driverid, 
                AVG(collectedcashbolt + collectedcashuber) as avg_cash,
                AVG(earningsperformancebolt + earningsperformanceuber) as avg_perf_total,
@@ -112,16 +88,18 @@ $sql_list = "
         FROM performance
         WHERE (finishedridesbolt + finishedridesuber) > 0
         GROUP BY driverid
+        /* FIX: Alias avg_perf_total funktioniert hier nicht, daher Formel ausschreiben */
+        HAVING AVG(earningsperformancebolt + earningsperformanceuber) > 0
     ) as stats ON p.driverid = stats.driverid
     WHERE 1=1 $searchSql
-    ORDER BY stats.avg_perf_total DESC, p.driverid, p.week DESC LIMIT 300
+    ORDER BY stats.avg_perf_total DESC, p.driverid, p.week DESC LIMIT 500
 ";
 
 $stmtList = $pdo->prepare($sql_list);
 $stmtList->execute($queryParams);
 $list = $stmtList->fetchAll();
 
-// --- 5. GLOBALEN DURCHSCHNITT BERECHNEN ---
+// --- 4. GLOBALEN DURCHSCHNITT BERECHNEN ---
 $gCount = count($list);
 $gData = ['cash' => 0, 'perf' => 0, 'rides' => 0, 'bolt_€' => 0, 'bolt_r' => 0, 'bolt_rate' => 0, 'uber_€' => 0, 'uber_r' => 0, 'uber_rate' => 0];
 
@@ -142,21 +120,24 @@ if ($gCount > 0) {
 ?>
 
 <style>
-    .info-box { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-size: 14px; }
-    .inline-filter-form { display: flex; gap: 8px; align-items: center; width: 100%; }
+    /* Suchbereich Styles */
+    .inline-filter-form { display: flex; gap: 8px; align-items: center; width: 100%; margin-bottom: 20px; }
     .inline-filter-form select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: white; height: 38px; flex: 1; }
     .btn-search { background: #3b82f6; color: white; border: none; padding: 0 20px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px; }
     .btn-reset { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0 15px; border-radius: 4px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; height: 36px; }
 
-    .table-responsive { width: 100%; overflow-x: auto; border-radius: 6px; border: 1px solid #e2e8f0; }
+    /* Tabellen Styles */
+    .table-responsive { width: 100%; overflow-x: auto; border-radius: 6px; border: 1px solid #e2e8f0; background: white; }
     .listtable { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
     .listtable th, .listtable td { padding: 10px 8px; border: 1px solid #eee; text-align: left; }
     .listtable th { background: #f4f4f4; color: #666; font-weight: bold; text-transform: uppercase; font-size: 10px; }
     
+    /* Spezial-Zeilen */
     .row-grand-avg { background: #1e293b !important; color: #f8fafc !important; font-weight: bold; }
     .row-grand-avg td { border-bottom: 3px double #334155; padding: 12px 8px; }
     .row-avg-header td { background: #000 !important; color: #fff !important; font-weight: bold; border-bottom: 2px solid #333; }
     
+    /* Spalten-Hervorhebung */
     .label-avg { font-size: 9px; color: #f1c40f; display: block; margin-bottom: 2px; text-transform: uppercase; }
     .col-bar { background: #fff9e6 !important; border-left: 2px solid #f1c40f !important; }
     .col-gesamt { background: #f0f7ff !important; border-left: 2px solid #3b82f6 !important; }
@@ -166,33 +147,31 @@ if ($gCount > 0) {
     .row-grand-avg td.col-bar, .row-grand-avg td.col-gesamt, .row-grand-avg td.col-bolt, .row-grand-avg td.col-uber { background: transparent !important; color: white !important; }
 </style>
 
-<div class="card" style="margin-bottom: 25px; padding: 12px 20px;">
+<div class="card" style="padding: 12px 20px;">
     <form method="get" action="/" class="inline-filter-form">
         <input type="hidden" name="route" value="module/performance">
         <select name="filter_driver">
             <option value="">-- Alle aktiven Fahrer --</option>
             <?php foreach($filterDriversList as $fd): ?>
-                <option value="<?= $fd['id'] ?>" <?= ($filterDriver == $fd['id']) ? 'selected' : '' ?>><?= htmlspecialchars($fd['lastname'] . ", " . $fd['firstname']) ?></option>
+                <option value="<?= $fd['id'] ?>" <?= ($filterDriver == $fd['id']) ? 'selected' : '' ?>>👤 <?= htmlspecialchars($fd['lastname'] . ", " . $fd['firstname']) ?></option>
             <?php endforeach; ?>
         </select>
         <select name="filter_week" style="max-width: 180px;">
             <option value="">-- Alle aktiven Wochen --</option>
             <?php foreach($filterWeeksList as $fw): ?>
-                <option value="<?= htmlspecialchars($fw) ?>" <?= ($filterWeek == $fw) ? 'selected' : '' ?>><?= htmlspecialchars($fw) ?></option>
+                <option value="<?= htmlspecialchars($fw) ?>" <?= ($filterWeek == $fw) ? 'selected' : '' ?>>📅 <?= htmlspecialchars($fw) ?></option>
             <?php endforeach; ?>
         </select>
         <div style="display: flex; gap: 8px;">
             <button type="submit" class="btn-search">🔍 Suchen</button>
-            <a href="/performance" class="btn-reset">✖ Reset</a>
+            <a href="/?route=module/performance" class="btn-reset">✖ Reset</a>
         </div>
     </form>
 </div>
 
-<?= $message ?>
-
-<div class="card" style="margin-bottom: 25px; padding: 0; overflow: hidden; border-top: 4px solid #1e293b;">
+<div class="card" style="margin-top: 20px; padding: 0; overflow: hidden; border-top: 4px solid #1e293b;">
     <div style="padding: 12px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin:0; font-size: 16px;">📊 Performance Ranking</h3>
+        <h3 style="margin:0; font-size: 16px;">📊 Performance Ranking (Top Ø-Performance)</h3>
         <span style="font-size: 11px; color: #64748b; font-weight: bold;"><?= $gCount ?> Einträge geladen</span>
     </div>
     <div class="table-responsive">
@@ -210,7 +189,7 @@ if ($gCount > 0) {
                 <?php if ($gCount > 0): ?>
                     <tr class="row-grand-avg">
                         <td style="color:#38bdf8;">Ø GESAMT</td>
-                        <td>ALLE GELADENEN DATEN</td>
+                        <td>ALLE GEFILTERTEN DATEN</td>
                         <td class="col-bar"><?= fmt($gData['cash']) ?> €</td>
                         <td class="col-gesamt"><?= fmt($gData['perf']) ?> €</td>
                         <td class="col-gesamt"><?= number_format($gData['rides'], 1) ?></td>
@@ -257,7 +236,7 @@ if ($gCount > 0) {
                     </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="11" style="text-align:center; padding: 40px; color: #94a3b8;">Keine Daten vorhanden.</td></tr>
+                    <tr><td colspan="10" style="text-align:center; padding: 40px; color: #94a3b8;">Keine aktiven Performance-Daten vorhanden.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
