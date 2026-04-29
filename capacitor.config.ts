@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Setmobile Driver',
   webDir: 'dist/driver',
   server: {
-    // Allow cleartext (HTTP) traffic only in development; in prod all traffic goes to HTTPS
+    url: 'https://driver.setmobile.eu',
+    errorPath: 'offline.html',
     androidScheme: 'https',
   },
   android: {

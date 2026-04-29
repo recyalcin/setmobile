@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Setmobile Driver</title>
+    <style>
+      :root {
+        --bg-top: #081120;
+        --bg-bottom: #132338;
+        --card: rgba(8, 15, 30, 0.76);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text: #f8fafc;
+        --muted: #b6c3d1;
+        --accent: #f97316;
+        --accent-strong: #ea580c;
+        --accent-soft: rgba(249, 115, 22, 0.16);
+        --success: #22c55e;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow: hidden;
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(249, 115, 22, 0.18), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.22), transparent 35%),
+          linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        border-radius: 999px;
+        filter: blur(10px);
+        z-index: 0;
+      }
+
+      body::before {
+        width: 180px;
+        height: 180px;
+        top: -40px;
+        right: -20px;
+        background: rgba(249, 115, 22, 0.18);
+      }
+
+      body::after {
+        width: 220px;
+        height: 220px;
+        left: -80px;
+        bottom: -100px;
+        background: rgba(56, 189, 248, 0.12);
+      }
+
+      .panel {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 430px);
+        padding: 28px;
+        border-radius: 28px;
+        border: 1px solid var(--card-border);
+        background: var(--card);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        color: #dbe7f2;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .lang-switch {
+        display: inline-flex;
+        gap: 6px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .lang-button {
+        width: auto;
+        padding: 8px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #cbd5e1;
+        background: transparent;
+        border: 1px solid transparent;
+      }
+
+      .lang-button.is-active {
+        color: #ffffff;
+        background: rgba(249, 115, 22, 0.18);
+        border-color: rgba(249, 115, 22, 0.36);
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 8px rgba(249, 115, 22, 0.12);
+      }
+
+      h1 {
+        margin: 20px 0 12px;
+        font-size: clamp(30px, 7vw, 42px);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .status {
+        margin-top: 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .status-icon {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+
+      .status-copy strong {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 15px;
+        color: var(--text);
+      }
+
+      .status-copy span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .actions {
+        display: grid;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        width: 100%;
+        padding: 16px 18px;
+        border-radius: 18px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 140ms ease, background-color 140ms ease, opacity 140ms ease;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .primary {
+        color: white;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      }
+
+      .secondary {
+        color: #e2e8f0;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .helper {
+        margin-top: 18px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .helper strong {
+        color: var(--success);
+      }
+
+      .helper.is-offline strong {
+        color: var(--accent);
+      }
+
+      .loader {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 2px solid rgba(255, 255, 255, 0.28);
+        border-top-color: white;
+        display: inline-block;
+        animation: spin 800ms linear infinite;
+        vertical-align: text-bottom;
+        margin-right: 8px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 420px) {
+        body {
+          padding: 16px;
+        }
+
+        .panel {
+          padding: 22px;
+          border-radius: 24px;
+        }
+
+        p {
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <div class="topbar">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Setmobile Driver
+        </div>
+        <div class="lang-switch" role="group" aria-label="Language switcher">
+          <button class="lang-button" data-lang="tr" type="button">TR</button>
+          <button class="lang-button" data-lang="en" type="button">EN</button>
+          <button class="lang-button" data-lang="de" type="button">DE</button>
+        </div>
+      </div>
+
+      <h1 id="headline"></h1>
+      <p id="message"></p>
+
+      <section class="status" aria-live="polite">
+        <div class="status-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M2 8.82A15.91 15.91 0 0 1 12 5c3.85 0 7.38 1.36 10 3.63"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              d="M5 12.86A11.94 11.94 0 0 1 12 10c2.56 0 4.94.8 6.9 2.18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <path
+              d="M8.5 16.5A6.98 6.98 0 0 1 12 15c1.26 0 2.45.33 3.48.92"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <circle cx="12" cy="19" r="1.6" fill="currentColor" />
+            <path
+              d="M3 3l18 18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <div class="status-copy">
+          <strong id="status-title">Internet baglantisi kontrol ediliyor</strong>
+          <span id="status-text">Ag yeniden erisilebilir olur olmaz uygulama devam edecek.</span>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button class="primary" id="retry-button" type="button">Tekrar dene</button>
+        <button class="secondary" id="browser-button" type="button">Tarayicida ac</button>
+      </div>
+
+      <p class="helper is-offline" id="helper">
+        <strong>Cevrimdisi</strong> durumu algilandi.
+      </p>
+    </main>
+
+    <script>
+      const APP_URL = 'https://driver.setmobile.eu';
+      const RETRY_INTERVAL_MS = 5000;
+      const STORAGE_KEY = 'setmobile-driver-language';
+      const I18N_STORAGE_KEY = 'i18nextLng';
+      const LEGACY_STORAGE_KEY = 'setmobile-offline-language';
+      const SUPPORTED_LANGUAGES = ['tr', 'en', 'de'];
+
+      const headline = document.getElementById('headline');
+      const retryButton = document.getElementById('retry-button');
+      const browserButton = document.getElementById('browser-button');
+      const message = document.getElementById('message');
+      const statusTitle = document.getElementById('status-title');
+      const statusText = document.getElementById('status-text');
+      const helper = document.getElementById('helper');
+      const languageButtons = Array.from(document.querySelectorAll('.lang-button'));
+
+      let retryTimer = null;
+      let isRetrying = false;
+      let currentState = 'offline';
+      let currentLanguage = resolveLanguage();
+
+      const translations = {
+        tr: {
+          headline: 'Ba\\u011flanti bekleniyor',
+          message:
+            'Uygulama \\u015fu anda <strong>driver.setmobile.eu</strong> adresine ula\\u015famiyor. Internet ba\\u011flantin geri geldi\\u011finde en g\\u00fcncel s\\u00fcr\\u00fcm otomatik olarak a\\u00e7ilacak.',
+          statusCheckingTitle: 'Internet ba\\u011flantisi kontrol ediliyor',
+          statusCheckingText: 'A\\u011f yeniden eri\\u015filebilir olur olmaz uygulama devam edecek.',
+          retry: 'Tekrar dene',
+          retrying: 'Ba\\u011flaniliyor',
+          retryingTitle: 'Sunucu yeniden deneniyor',
+          retryingText: 'Ba\\u011flanti kurulur kurulmaz uygulama a\\u00e7ilacak.',
+          searching: '<strong>Ba\\u011flanti araniyor</strong>...',
+          onlineTitle: 'Internet eri\\u015fimi geri geldi',
+          onlineText: 'G\\u00fcncel siteye y\\u00f6nlendiriliyorsun.',
+          onlineHelper: '<strong>\\u00c7evrimi\\u00e7i</strong> durumu algilandi.',
+          serverDownTitle: 'Sunucuya \\u015fu an eri\\u015filemiyor',
+          serverDownText: 'Site ge\\u00e7ici olarak yanit vermiyor olabilir. Birka\\u00e7 saniye i\\u00e7inde tekrar denenecek.',
+          serverDownHelper: '<strong>Ba\\u011flanti var</strong>, fakat sunucu yanit vermedi.',
+          offlineHelper: '<strong>\\u00c7evrimd\\u0131\\u015fi</strong> durumu algilandi.',
+          browser: 'Tarayicida a\\u00e7',
+        },
+        en: {
+          headline: 'Waiting for connection',
+          message:
+            'The app cannot reach <strong>driver.setmobile.eu</strong> right now. As soon as your internet connection is back, the latest version will open automatically.',
+          statusCheckingTitle: 'Checking internet connection',
+          statusCheckingText: 'The app will continue as soon as the network is reachable again.',
+          retry: 'Try again',
+          retrying: 'Connecting',
+          retryingTitle: 'Retrying server connection',
+          retryingText: 'The app will open as soon as the connection is restored.',
+          searching: '<strong>Searching for connection</strong>...',
+          onlineTitle: 'Internet access is back',
+          onlineText: 'Redirecting to the latest site version.',
+          onlineHelper: '<strong>Online</strong> status detected.',
+          serverDownTitle: 'The server is not reachable right now',
+          serverDownText: 'The site may be temporarily unavailable. It will be retried again in a few seconds.',
+          serverDownHelper: '<strong>Connection is available</strong>, but the server did not respond.',
+          offlineHelper: '<strong>Offline</strong> status detected.',
+          browser: 'Open in browser',
+        },
+        de: {
+          headline: 'Verbindung wird erwartet',
+          message:
+            'Die App kann <strong>driver.setmobile.eu</strong> im Moment nicht erreichen. Sobald deine Internetverbindung zur\\u00fcck ist, wird automatisch die neueste Version ge\\u00f6ffnet.',
+          statusCheckingTitle: 'Internetverbindung wird gepr\\u00fcft',
+          statusCheckingText: 'Die App setzt fort, sobald das Netzwerk wieder erreichbar ist.',
+          retry: 'Erneut versuchen',
+          retrying: 'Verbindung l\\u00e4uft',
+          retryingTitle: 'Server wird erneut kontaktiert',
+          retryingText: 'Sobald die Verbindung steht, wird die App ge\\u00f6ffnet.',
+          searching: '<strong>Verbindung wird gesucht</strong>...',
+          onlineTitle: 'Internetzugang ist wieder da',
+          onlineText: 'Weiterleitung zur neuesten Version der Website.',
+          onlineHelper: '<strong>Online</strong> Status erkannt.',
+          serverDownTitle: 'Der Server ist derzeit nicht erreichbar',
+          serverDownText: 'Die Website antwortet m\\u00f6glicherweise vor\\u00fcbergehend nicht. In wenigen Sekunden wird erneut versucht.',
+          serverDownHelper: '<strong>Verbindung vorhanden</strong>, aber der Server hat nicht geantwortet.',
+          offlineHelper: '<strong>Offline</strong> Status erkannt.',
+          browser: 'Im Browser \\u00f6ffnen',
+        },
+      };
+
+      function resolveLanguage() {
+        try {
+          const saved =
+            window.localStorage.getItem(STORAGE_KEY) ||
+            window.localStorage.getItem(I18N_STORAGE_KEY) ||
+            window.localStorage.getItem(LEGACY_STORAGE_KEY);
+          const normalizedSaved = String(saved || '')
+            .toLowerCase()
+            .split('-')[0];
+          if (SUPPORTED_LANGUAGES.includes(normalizedSaved)) {
+            return normalizedSaved;
+          }
+        } catch (error) {}
+
+        return 'de';
+      }
+
+      function persistLanguage(language) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, language);
+          window.localStorage.setItem(I18N_STORAGE_KEY, language);
+          window.localStorage.setItem(LEGACY_STORAGE_KEY, language);
+        } catch (error) {}
+      }
+
+      function copy() {
+        return translations[currentLanguage] || translations.en;
+      }
+
+      function updateLanguageButtons() {
+        languageButtons.forEach((button) => {
+          button.classList.toggle('is-active', button.dataset.lang === currentLanguage);
+        });
+      }
+
+      function renderStaticCopy() {
+        const content = copy();
+        document.documentElement.lang = currentLanguage;
+        headline.textContent = content.headline;
+        message.innerHTML = content.message;
+        browserButton.textContent = content.browser;
+        document.title = 'Setmobile Driver';
+        updateLanguageButtons();
+      }
+
+      function changeLanguage(language) {
+        if (!SUPPORTED_LANGUAGES.includes(language)) {
+          return;
+        }
+
+        currentLanguage = language;
+        persistLanguage(language);
+        renderStaticCopy();
+        setState(currentState);
+      }
+
+      function setState(state) {
+        currentState = state;
+        const content = copy();
+
+        if (state === 'retrying') {
+          retryButton.disabled = true;
+          retryButton.innerHTML = '<span class="loader"></span>' + content.retrying;
+          statusTitle.textContent = content.retryingTitle;
+          statusText.textContent = content.retryingText;
+          helper.className = 'helper';
+          helper.innerHTML = content.searching;
+          return;
+        }
+
+        retryButton.disabled = false;
+        retryButton.textContent = content.retry;
+
+        if (state === 'online') {
+          statusTitle.textContent = content.onlineTitle;
+          statusText.textContent = content.onlineText;
+          helper.className = 'helper';
+          helper.innerHTML = content.onlineHelper;
+          return;
+        }
+
+        statusTitle.textContent = navigator.onLine
+          ? content.serverDownTitle
+          : content.statusCheckingTitle;
+        statusText.textContent = navigator.onLine
+          ? content.serverDownText
+          : content.statusCheckingText;
+        helper.className = 'helper is-offline';
+        helper.innerHTML = navigator.onLine
+          ? content.serverDownHelper
+          : content.offlineHelper;
+      }
+
+      async function retryConnection() {
+        if (isRetrying) {
+          return;
+        }
+
+        isRetrying = true;
+        setState('retrying');
+
+        try {
+          await fetch(APP_URL, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+          setState('online');
+          window.location.replace(APP_URL);
+        } catch (error) {
+          setState('offline');
+        } finally {
+          isRetrying = false;
+        }
+      }
+
+      function startRetryLoop() {
+        if (retryTimer) {
+          window.clearInterval(retryTimer);
+        }
+
+        retryTimer = window.setInterval(() => {
+          if (navigator.onLine) {
+            retryConnection();
+          } else {
+            setState('offline');
+          }
+        }, RETRY_INTERVAL_MS);
+      }
+
+      retryButton.addEventListener('click', retryConnection);
+      browserButton.addEventListener('click', () => window.location.assign(APP_URL));
+      languageButtons.forEach((button) => {
+        button.addEventListener('click', () => changeLanguage(button.dataset.lang));
+      });
+
+      window.addEventListener('online', retryConnection);
+      window.addEventListener('offline', () => setState('offline'));
+
+      renderStaticCopy();
+      setState(navigator.onLine ? 'retrying' : 'offline');
+      startRetryLoop();
+
+      if (navigator.onLine) {
+        retryConnection();
+      }
+    </script>
+  </body>
+</html>
